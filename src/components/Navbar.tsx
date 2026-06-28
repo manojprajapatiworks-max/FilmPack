@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User, Notification } from "../types";
-import { Briefcase, Bell, LogOut, User as UserIcon, MessageSquare, Mail, Phone, Calendar, Shield, Building } from "lucide-react";
+import { Film, Bell, LogOut, User as UserIcon, MessageSquare, Mail, Phone, Calendar, Shield, Building } from "lucide-react";
 
 interface NavbarProps {
   currentUser: User | null;
@@ -38,13 +38,13 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
   }, [currentUser, isNotifOpen]);
 
   return (
-    <header className="bg-[#fc20f6]/0 bg-[#FCFAF6] border-b border-stone-200 text-stone-900 sticky top-0 z-50 shadow-sm">
+    <header className="bg-[#FCFAF6]/95 backdrop-blur-md border-b border-stone-200 text-stone-900 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Platform Name */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
             <div className="bg-stone-900 p-1.5 rounded-sm flex items-center justify-center">
-              <Briefcase className="h-5 w-5 text-[#FCFAF6]" />
+              <Film className="h-5 w-5 text-[#FCFAF6]" />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight text-stone-900 flex items-center gap-1.5 editorial-title">
