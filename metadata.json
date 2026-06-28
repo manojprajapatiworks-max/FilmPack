@@ -1,0 +1,6 @@
+{
+  "name": "FilmPack Careers",
+  "description": "Packaging Film Industry Job Portal featuring applicant search/filters, recruiter job management with deadline-based closing, admin moderation and approvals, and Gemini-powered candidate skill matching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

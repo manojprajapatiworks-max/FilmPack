@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #fcfaf6;
+  color: #1c1917;
+}
+
+/* Custom Editorial Styling helpers */
+.editorial-card {
+  background-color: #ffffff;
+  border: 1px solid #e7e5e4;
+  border-bottom: 2px solid #d6d3d1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: all 0.2s ease-in-out;
+}
+
+.editorial-card:hover {
+  border-color: #a8a29e;
+  box-shadow: 0 4px 12px rgba(27, 25, 23, 0.04);
+}
+
+.editorial-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.editorial-serif {
+  font-family: var(--font-serif);
+}
+
+.editorial-mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Beautiful custom scrollbar for editorial clean feeling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
