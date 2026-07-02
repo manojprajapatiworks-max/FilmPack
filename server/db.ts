@@ -116,6 +116,7 @@ export interface TickerItem {
 export interface SiteConfig {
   header: {
     platformName: string;
+    logoUrl?: string;
     allianceBadge: string;
     plantsLiveCount?: string;
     livePlantsCount?: string;
@@ -148,6 +149,7 @@ export interface SiteConfig {
 export const INITIAL_SITE_CONFIG: SiteConfig = {
   header: {
     platformName: "FILMPACK™",
+    logoUrl: "",
     allianceBadge: "ALLIANCE",
     plantsLiveCount: "● 14 PLANTS LIVE",
     livePlantsCount: "● 14 PLANTS LIVE",

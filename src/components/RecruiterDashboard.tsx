@@ -400,7 +400,7 @@ ${app.remarks || 'None provided'}
       {/* Sub Navbar */}
       <div className="bg-white border-b border-stone-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 h-14 items-center overflow-x-auto">
+          <div className="flex space-x-4 sm:space-x-8 h-14 items-center overflow-x-auto">
             <button
               onClick={() => { setActiveTab("manage_jobs"); setSelectedApp(null); }}
               className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${

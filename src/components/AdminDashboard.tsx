@@ -23,6 +23,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
     header: {
       platformName: "FILMPACK™",
+      logoUrl: "",
       tagline: "BOPP • BOPET • CPP • BARRIER FILM JOBS",
       plantsLiveCount: "● 14 PLANTS LIVE",
       livePlantsCount: "● 14 PLANTS LIVE",
@@ -137,6 +138,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
           },
           header: {
             ...data?.header,
+            logoUrl: data?.header?.logoUrl || "",
             livePlantsCount: data?.header?.livePlantsCount || data?.header?.plantsLiveCount || "● 14 PLANTS LIVE"
           }
         });
@@ -438,7 +440,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
       {/* Admin Tab Header */}
       <div className="bg-white border-b border-stone-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 h-14 items-center overflow-x-auto">
+          <div className="flex space-x-4 sm:space-x-8 h-14 items-center overflow-x-auto">
             <button
               onClick={() => setActiveSection("stats")}
               className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
@@ -1074,7 +1076,23 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                 <span className="text-[10px] font-mono font-bold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">GLOBAL NAVBAR & FOOTER</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1 flex items-center justify-between">
+                    <span>Company Logo Image URL (Optional)</span>
+                    <span className="text-amber-600 font-normal">Replaces default icon in navbar & footer when set</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/your-company-logo.png"
+                    value={siteConfig?.header?.logoUrl || ""}
+                    onChange={(e) => setSiteConfig({
+                      ...siteConfig,
+                      header: { ...siteConfig.header, logoUrl: e.target.value }
+                    })}
+                    className="w-full bg-stone-50 border border-stone-300 rounded-sm p-2 text-xs font-mono text-stone-900 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                  />
+                </div>
                 <div>
                   <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Platform Name (Header)</label>
                   <input
@@ -1087,6 +1105,9 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                     className="w-full bg-stone-50 border border-stone-300 rounded-sm p-2 text-xs font-bold font-serif text-stone-900 focus:outline-none focus:ring-1 focus:ring-amber-600"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Alliance Badge</label>
                   <input

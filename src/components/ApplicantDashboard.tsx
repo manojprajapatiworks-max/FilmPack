@@ -257,10 +257,10 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
       {/* Tab Selectors */}
       <div className="bg-[#F5F2EB] border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-6 h-12 items-center">
+          <div className="flex space-x-4 sm:space-x-6 h-12 items-center overflow-x-auto">
             <button
               onClick={() => { setActiveSection("find_jobs"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer ${
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
                 activeSection === "find_jobs" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
@@ -268,7 +268,7 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
             </button>
             <button
               onClick={() => { setActiveSection("my_applications"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer ${
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
                 activeSection === "my_applications" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
@@ -276,7 +276,7 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
             </button>
             <button
               onClick={() => { setActiveSection("profile"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer ${
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
                 activeSection === "profile" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >

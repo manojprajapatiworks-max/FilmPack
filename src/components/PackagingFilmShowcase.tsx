@@ -205,9 +205,9 @@ export default function PackagingFilmShowcase({ compact = false }: PackagingFilm
             <p className="text-xs sm:text-sm text-stone-300 font-serif max-w-xl line-clamp-2 leading-relaxed drop-shadow">
               {slide.subtitle}
             </p>
-            <div className="pt-2 flex items-center gap-2 text-[11px] font-mono text-amber-200 bg-stone-900/90 border border-stone-700 px-3 py-1.5 rounded w-fit backdrop-blur-md">
+            <div className="pt-2 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-amber-200 bg-stone-900/90 border border-stone-700 px-2.5 sm:px-3 py-1.5 rounded w-fit max-w-full backdrop-blur-md">
               <Layers className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-              <span>{slide.specs}</span>
+              <span className="break-words sm:whitespace-normal">{slide.specs}</span>
             </div>
           </div>
 

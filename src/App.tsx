@@ -327,11 +327,11 @@ export default function App() {
             </div>
 
             {/* Right Form Side */}
-            <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FCFAF6]/60 relative">
+            <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#FCFAF6]/60 relative">
               {/* Matrix grid background */}
               <div className="absolute inset-0 bg-[radial-gradient(#e5e5e5_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
               
-              <div className="max-w-md w-full space-y-8 bg-white border border-stone-200 rounded-sm p-6 sm:p-8 shadow-md relative z-10">
+              <div className="max-w-md w-full space-y-6 sm:space-y-8 bg-white border border-stone-200 rounded-sm p-5 sm:p-8 shadow-md relative z-10">
                 
                 {/* Heading */}
                 <div className="text-center">
@@ -562,10 +562,15 @@ export default function App() {
       </div>
 
       {/* Dynamic & Editable Footer with Social Media Jump Icons - Requirement 5 */}
-      <footer id="website-footer" className="bg-[#18181b] text-stone-300 font-sans border-t border-stone-800 py-10 px-4 sm:px-6 lg:px-8 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-stone-800 text-left">
+      <footer id="website-footer" className="bg-[#18181b] text-stone-300 font-sans border-t border-stone-800 py-8 sm:py-10 px-4 sm:px-6 lg:px-8 mt-auto">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 pb-8 border-b border-stone-800 text-left">
           <div className="space-y-2">
-            <h4 className="font-serif font-bold text-base text-white tracking-tight">{siteConfig?.footer?.copyrightName || siteConfig?.footer?.copyrightText || "FilmPack Alliance"}</h4>
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+              {siteConfig?.header?.logoUrl && (
+                <img src={siteConfig.header.logoUrl} alt="Company Logo" className="h-7 sm:h-8 w-auto max-w-[130px] sm:max-w-[140px] object-contain" referrerPolicy="no-referrer" />
+              )}
+              <h4 className="font-serif font-bold text-sm sm:text-base text-white tracking-tight">{siteConfig?.footer?.copyrightName || siteConfig?.footer?.copyrightText || "FilmPack Alliance"}</h4>
+            </div>
             <p className="text-xs text-stone-400 font-serif leading-relaxed">{siteConfig?.header?.tagline || "BOPP • BOPET • CPP • BARRIER FILM JOBS"}</p>
             <p className="text-[11px] text-stone-500 font-mono pt-1">Simulated SMS / Email Carrier Gateways: <span className="text-emerald-400 font-bold">● ONLINE</span></p>
           </div>

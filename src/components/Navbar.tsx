@@ -100,29 +100,35 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
     <>
       <header className="bg-[#FCFAF6]/95 backdrop-blur-md border-b border-stone-200 text-stone-900 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
           {/* Realistic Packaging Film Business Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => setActiveTab("dashboard")}>
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-600 rounded-lg blur-xs opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative bg-stone-900 p-2 rounded-md flex items-center justify-center shadow-md border border-stone-700">
-                <Film className="h-5 w-5 text-amber-400 transform group-hover:rotate-12 transition-transform duration-300" />
-                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-stone-900" title="Production Lines Live" />
+          <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group min-w-0 max-w-[70%] sm:max-w-none" onClick={() => setActiveTab("dashboard")}>
+            {siteConfig?.header?.logoUrl ? (
+              <div className="relative flex items-center shrink-0">
+                <img src={siteConfig.header.logoUrl} alt="Company Logo" className="h-7 sm:h-9 w-auto max-w-[110px] sm:max-w-[160px] object-contain transition duration-300 group-hover:opacity-95" referrerPolicy="no-referrer" />
               </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-lg font-black tracking-tight text-stone-900 editorial-title flex items-center">
+            ) : (
+              <div className="relative shrink-0">
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-600 rounded-lg blur-xs opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                <div className="relative bg-stone-900 p-1.5 rounded-md flex items-center justify-center shadow-md border border-stone-700 min-w-[34px] min-h-[34px] sm:min-w-[36px] sm:min-h-[36px]">
+                  <Film className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 transform group-hover:rotate-12 transition-transform duration-300" />
+                  <div className="absolute -top-1 -right-1 w-2 sm:w-2.5 h-2 sm:h-2.5 bg-emerald-500 rounded-full border-2 border-stone-900" title="Production Lines Live" />
+                </div>
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap sm:flex-nowrap">
+                <h1 className="text-sm sm:text-lg font-black tracking-tight text-stone-900 editorial-title flex items-center truncate">
                   {siteConfig?.header?.platformName || "FILMPACK™"}
                 </h1>
-                <span className="text-[9px] bg-stone-900 text-amber-400 px-2 py-0.5 rounded-sm font-mono font-extrabold tracking-widest uppercase border border-stone-700 shadow-2xs">
+                <span className="text-[8px] sm:text-[9px] bg-stone-900 text-amber-400 px-1.5 sm:px-2 py-0.5 rounded-sm font-mono font-extrabold tracking-widest uppercase border border-stone-700 shadow-2xs shrink-0">
                   {siteConfig?.header?.allianceBadge || "ALLIANCE"}
                 </span>
-                <span className="hidden sm:inline-block text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold uppercase">
+                <span className="hidden md:inline-block text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0">
                   {siteConfig?.header?.plantsLiveCount || "● 14 PLANTS LIVE"}
                 </span>
               </div>
-              <p className="text-[9px] text-stone-600 font-mono uppercase tracking-wider flex items-center gap-1.5 font-semibold">
+              <p className="text-[8px] sm:text-[9px] text-stone-600 font-mono uppercase tracking-wider flex items-center gap-1 font-semibold truncate sm:overflow-visible">
                 {siteConfig?.header?.tagline || "BOPP • BOPET • CPP • BARRIER FILM JOBS"}
               </p>
             </div>
@@ -130,7 +136,7 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
 
           {/* User Details & Controls */}
           {currentUser ? (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
               {/* Role Indicator Accent */}
               <div className="hidden md:flex items-center space-x-2">
                 {currentUser.role === "admin" && (
@@ -186,18 +192,19 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
               </button>
             </div>
           ) : (
-            <div className="text-[10px] font-mono uppercase tracking-widest text-stone-500">
-              Packaging Film Industry Alliance Portal
+            <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-stone-500 text-right shrink-0 ml-1">
+              <span className="hidden sm:inline">Packaging Film Industry Alliance Portal</span>
+              <span className="sm:hidden font-bold text-stone-700">Alliance Portal</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Live Packaging Film Production & Hiring Ticker */}
-      <div className="bg-stone-900 text-stone-300 border-t border-stone-800 text-[10px] font-mono py-1.5 overflow-hidden shadow-inner flex items-center">
-        <div className="bg-amber-500 text-stone-950 font-black px-2.5 py-0.5 z-10 shrink-0 uppercase tracking-widest flex items-center gap-1.5 text-[9px] shadow-sm ml-2 rounded-xs border border-amber-400">
-          <span className="w-1.5 h-1.5 bg-stone-950 rounded-full"></span>
-          PLANT PULSE
+      <div className="bg-stone-900 text-stone-300 border-t border-stone-800 text-[9px] sm:text-[10px] font-mono py-1.5 overflow-hidden shadow-inner flex items-center">
+        <div className="bg-amber-500 text-stone-950 font-black px-2 sm:px-2.5 py-0.5 z-10 shrink-0 uppercase tracking-widest flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] shadow-sm ml-2 rounded-xs border border-amber-400">
+          <span className="w-1.5 h-1.5 bg-stone-950 rounded-full shrink-0"></span>
+          <span className="hidden sm:inline">PLANT </span>PULSE
         </div>
         <div className="flex overflow-hidden relative w-full">
           <div className="animate-marquee whitespace-nowrap flex items-center gap-8 px-4 font-semibold text-stone-300">

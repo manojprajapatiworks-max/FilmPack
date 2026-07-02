@@ -114,6 +114,7 @@ export interface TickerItem {
 export interface SiteConfig {
   header: {
     platformName: string;
+    logoUrl?: string;
     allianceBadge: string;
     plantsLiveCount?: string;
     livePlantsCount?: string;
