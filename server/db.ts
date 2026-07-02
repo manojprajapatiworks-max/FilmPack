@@ -103,7 +103,7 @@ export interface ShowcaseImage {
   subtitle: string;
   category: string;
   badgeColor: string;
-  specs: string;
+  specs: string | string[];
 }
 
 export interface TickerItem {
@@ -577,6 +577,10 @@ class Database {
     this.load();
     const cfg = this.data.siteConfig || INITIAL_SITE_CONFIG;
     const socialLinks = cfg.socialLinks || cfg.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    const showcaseImages = (cfg.showcaseImages || INITIAL_SITE_CONFIG.showcaseImages).map(img => ({
+      ...img,
+      specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
+    }));
     return {
       ...cfg,
       header: {
@@ -594,12 +598,17 @@ class Database {
         contactAddress: cfg.footer?.contactAddress || cfg.footer?.addressText || "Industrial Packaging Area, Phase-4, Mumbai, India",
         socialLinks
       },
-      socialLinks
+      socialLinks,
+      showcaseImages
     };
   }
 
   public saveSiteConfig(config: SiteConfig) {
     const socialLinks = config.socialLinks || config.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    const showcaseImages = (config.showcaseImages || INITIAL_SITE_CONFIG.showcaseImages).map(img => ({
+      ...img,
+      specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
+    }));
     this.data.siteConfig = {
       ...config,
       header: {
@@ -615,7 +624,8 @@ class Database {
         contactAddress: config.footer?.contactAddress || config.footer?.addressText || "Industrial Packaging Area, Phase-4, Mumbai, India",
         socialLinks
       },
-      socialLinks
+      socialLinks,
+      showcaseImages
     };
     this.save();
   }

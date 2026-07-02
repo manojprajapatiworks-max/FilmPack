@@ -54,7 +54,8 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
       facebook: "https://facebook.com",
       whatsapp: "https://whatsapp.com",
       linkedin: "https://linkedin.com"
-    }
+    },
+    showcaseImages: []
   });
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
@@ -120,9 +121,14 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
           whatsapp: "https://whatsapp.com",
           linkedin: "https://linkedin.com"
         };
+        const showcaseImages = (data?.showcaseImages || []).map((img: any) => ({
+          ...img,
+          specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
+        }));
         setSiteConfig({
           ...data,
           socialLinks,
+          showcaseImages,
           footer: {
             ...data?.footer,
             socialLinks,
@@ -1368,7 +1374,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                   onClick={() => setSiteConfig({
                     ...siteConfig,
                     showcaseImages: [
-                      ...siteConfig.showcaseImages,
+                      ...(siteConfig.showcaseImages || []),
                       {
                         id: `img_${Date.now()}`,
                         url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=80",
@@ -1376,7 +1382,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                         subtitle: "High barrier multi-layer co-extruded BOPP/CPP production.",
                         category: "EXTRUSION SPECIALTY",
                         badgeColor: "amber",
-                        specs: ["High Speed Line", "Zero Waste Loop", "Auto Gauge Control"]
+                        specs: "High Speed Line • Zero Waste Loop • Auto Gauge Control"
                       }
                     ]
                   })}
@@ -1387,7 +1393,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
               </div>
 
               <div className="space-y-6">
-                {siteConfig.showcaseImages.map((img, idx) => (
+                {(siteConfig.showcaseImages || []).map((img, idx) => (
                   <div key={img.id} className="bg-stone-50 p-4 rounded-sm border border-stone-200 space-y-3">
                     <div className="flex justify-between items-center border-b border-stone-200 pb-2">
                       <span className="font-mono text-xs font-bold text-stone-700 uppercase flex items-center gap-2">
@@ -1398,7 +1404,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                         type="button"
                         onClick={() => setSiteConfig({
                           ...siteConfig,
-                          showcaseImages: siteConfig.showcaseImages.filter(i => i.id !== img.id)
+                          showcaseImages: (siteConfig.showcaseImages || []).filter(i => i.id !== img.id)
                         })}
                         className="bg-red-50 hover:bg-red-100 text-red-700 p-1.5 px-3 border border-red-200 rounded-sm cursor-pointer transition font-mono text-[10px] uppercase font-bold flex items-center gap-1"
                         title="Delete Picture"
@@ -1426,7 +1432,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                             type="text"
                             value={img.url}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
                               newImgs[idx].url = e.target.value;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
@@ -1440,7 +1446,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                             type="text"
                             value={img.title}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
                               newImgs[idx].title = e.target.value;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
@@ -1453,7 +1459,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                             type="text"
                             value={img.category}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
                               newImgs[idx].category = e.target.value;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
@@ -1466,7 +1472,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                             type="text"
                             value={img.subtitle}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
                               newImgs[idx].subtitle = e.target.value;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
@@ -1478,7 +1484,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                           <select
                             value={img.badgeColor}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
                               newImgs[idx].badgeColor = e.target.value as any;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
@@ -1491,17 +1497,17 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Technical Specs (Comma-separated)</label>
+                          <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Technical Specs</label>
                           <input
                             type="text"
-                            value={img.specs.join(", ")}
+                            value={Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")}
                             onChange={(e) => {
-                              const newImgs = [...siteConfig.showcaseImages];
-                              newImgs[idx].specs = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
+                              const newImgs = [...(siteConfig.showcaseImages || [])];
+                              newImgs[idx].specs = e.target.value;
                               setSiteConfig({ ...siteConfig, showcaseImages: newImgs });
                             }}
                             className="w-full bg-white border border-stone-300 p-2 rounded-sm text-xs font-mono text-stone-800 placeholder-stone-400"
-                            placeholder="e.g. 10.5M Tons, Ultra Barrier, Bio-Degradable"
+                            placeholder="e.g. Thickness: 15µ - 40µ • Tensile Strength: 140 MPa"
                           />
                         </div>
                       </div>

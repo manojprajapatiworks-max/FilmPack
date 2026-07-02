@@ -101,7 +101,7 @@ export interface ShowcaseImage {
   subtitle: string;
   category: string;
   badgeColor: string;
-  specs: string;
+  specs: string | string[];
 }
 
 export interface TickerItem {
