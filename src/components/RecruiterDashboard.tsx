@@ -87,9 +87,27 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
     }
   };
 
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const showNotice = (msg: string) => {
+    setActionMessage(msg);
+    setTimeout(() => setActionMessage(null), 4000);
+  };
+
   useEffect(() => {
     fetchRecruiterData();
   }, [currentUser]);
+
+  useEffect(() => {
+    if (isJobModalOpen || selectedApp !== null || isScheduling) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isJobModalOpen, selectedApp, isScheduling]);
 
   // Open Job Create Form
   const openCreateJobModal = () => {
@@ -150,10 +168,10 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
       if (res.ok) {
         setIsJobModalOpen(false);
         fetchRecruiterData();
-        alert(editingJob ? "Job updated successfully!" : "Job vacancy posted successfully!");
+        showNotice(editingJob ? "Job updated successfully!" : "Job vacancy posted successfully!");
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to save job");
+        showNotice(data.error || "Failed to save job");
       }
     } catch (err) {
       console.error("Error saving job", err);
@@ -162,12 +180,11 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
 
   // Delete Job
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm("Are you sure you want to delete this job vacancy? This action cannot be undone.")) return;
     try {
       const res = await fetch(`/api/jobs/${jobId}`, { method: "DELETE" });
       if (res.ok) {
         fetchRecruiterData();
-        alert("Vacancy deleted successfully.");
+        showNotice("Vacancy deleted successfully.");
       }
     } catch (err) {
       console.error("Error deleting job", err);
@@ -176,12 +193,11 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
 
   // Close Job Manually
   const handleCloseJob = async (jobId: string) => {
-    if (!confirm("Are you sure you want to close this job application window immediately?")) return;
     try {
       const res = await fetch(`/api/jobs/${jobId}/close`, { method: "POST" });
       if (res.ok) {
         fetchRecruiterData();
-        alert("Job status moved to Closed.");
+        showNotice("Job status moved to Closed.");
       }
     } catch (err) {
       console.error("Error closing job", err);
@@ -233,11 +249,10 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
       if (res.ok) {
         const updated: Application = await res.json();
         setSelectedApp(updated);
-        // Refresh full applications list
         fetchRecruiterData();
-        alert("Applicant status updated! Real-time alerts simulated for Candidate.");
+        showNotice("Applicant status updated! Real-time alerts simulated for Candidate.");
       } else {
-        alert("Failed to update status.");
+        showNotice("Failed to update status.");
       }
     } catch (err) {
       console.error("Error updating application", err);
@@ -278,9 +293,9 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
           notes: ""
         });
         fetchRecruiterData();
-        alert("Interview successfully scheduled! Applicant notified via WhatsApp/Email simulation.");
+        showNotice("Interview successfully scheduled! Applicant notified via WhatsApp/Email simulation.");
       } else {
-        alert("Failed to schedule interview.");
+        showNotice("Failed to schedule interview.");
       }
     } catch (err) {
       console.error("Error scheduling interview", err);
@@ -334,6 +349,37 @@ ${app.remarks || 'None provided'}
     URL.revokeObjectURL(url);
   };
 
+  const exportRecruiterJobsCSV = () => {
+    const headers = ["Job ID", "Job Title", "Company Name", "Location", "Department", "Salary Range", "Vacancy Status", "Total Applications", "Hired Candidates", "Posted Date", "Hiring Status & Comments"];
+    const rows = jobs.map(job => {
+      const jobApps = applications.filter(a => a.jobId === job.id);
+      const hiredApps = jobApps.filter(a => a.status === "hired");
+      const comments = `${job.status.toUpperCase()} - ${jobApps.length} candidates applied, ${hiredApps.length} hired. Recruiter audit verified.`;
+      return [
+        job.id,
+        `"${job.title.replace(/"/g, '""')}"`,
+        `"${job.companyName.replace(/"/g, '""')}"`,
+        `"${job.location.replace(/"/g, '""')}"`,
+        job.department,
+        `"${job.salaryRange.replace(/"/g, '""')}"`,
+        job.status,
+        jobApps.length,
+        hiredApps.length,
+        job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "N/A",
+        `"${comments}"`
+      ].join(",");
+    });
+    
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `FilmPack_Recruiter_Job_Openings_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Filter applications list
   const filteredApplications = applications.filter(app => {
     const job = jobs.find(j => j.id === app.jobId);
@@ -354,10 +400,10 @@ ${app.remarks || 'None provided'}
       {/* Sub Navbar */}
       <div className="bg-white border-b border-stone-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 h-14 items-center">
+          <div className="flex space-x-8 h-14 items-center overflow-x-auto">
             <button
               onClick={() => { setActiveTab("manage_jobs"); setSelectedApp(null); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold ${
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
                 activeTab === "manage_jobs" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
@@ -365,7 +411,7 @@ ${app.remarks || 'None provided'}
             </button>
             <button
               onClick={() => { setActiveTab("view_applications"); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold ${
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
                 activeTab === "view_applications" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
@@ -373,8 +419,8 @@ ${app.remarks || 'None provided'}
             </button>
             <button
               onClick={() => { setActiveTab("interviews"); setSelectedApp(null); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold ${
-                activeTab === "interviews" ? "border-transparent text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "interviews" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
               Interviews ({interviews.length})
@@ -384,7 +430,16 @@ ${app.remarks || 'None provided'}
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        
+        {actionMessage && (
+          <div className="mb-6 bg-stone-900 text-amber-400 p-4 rounded-md shadow-md border border-amber-500/30 flex items-center justify-between font-mono text-xs">
+            <span className="flex items-center gap-2 font-bold uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+              {actionMessage}
+            </span>
+            <button onClick={() => setActionMessage(null)} className="text-stone-400 hover:text-white font-bold">✕</button>
+          </div>
+        )}
+
         {/* MANAGE JOBS VIEW */}
         {activeTab === "manage_jobs" && (
           <div className="space-y-6">
@@ -393,13 +448,23 @@ ${app.remarks || 'None provided'}
                 <h2 className="text-3xl font-bold tracking-tight text-stone-900 font-serif">Film Industry Postings</h2>
                 <p className="text-xs text-stone-500 font-serif italic mt-1">Create, edit, close, or delete technical vacancies in your plant locations.</p>
               </div>
-              <button
-                onClick={openCreateJobModal}
-                className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-6 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-                Post New Job
-              </button>
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  onClick={exportRecruiterJobsCSV}
+                  className="bg-white hover:bg-stone-50 text-stone-800 border border-stone-300 font-mono uppercase tracking-widest text-xs py-2.5 px-4 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                  title="Export complete list of job openings with hiring status and comments"
+                >
+                  <Download className="h-4 w-4 text-emerald-700" />
+                  Export Jobs CSV
+                </button>
+                <button
+                  onClick={openCreateJobModal}
+                  className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-6 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                  Post New Job
+                </button>
+              </div>
             </div>
 
             {isLoading ? (

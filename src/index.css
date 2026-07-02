@@ -58,3 +58,75 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a29e;
 }
+
+/* Packaging Film Business Custom Animations & Joyful Styling */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes shimmer-foil {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin-roll {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-reverse {
+  display: flex;
+  width: 200%;
+  animation: marquee-reverse 40s linear infinite;
+}
+
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+.animate-float {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-roll 25s linear infinite;
+}
+
+/* Holographic / Metallized Foil Shimmer Effect */
+.foil-badge {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 25%, #d97706 50%, #059669 75%, #1c1917 100%);
+  background-size: 300% 300%;
+  animation: shimmer-foil 8s ease infinite;
+}
+
+.foil-border {
+  border-image: linear-gradient(to right, #f59e0b, #10b981, #3b82f6, #8b5cf6, #f59e0b) 1;
+}
+
+.polymer-bg-grid {
+  background-image: radial-gradient(rgba(217, 119, 6, 0.15) 1px, transparent 1px), radial-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+

@@ -4,7 +4,7 @@ export interface User {
   email: string;
   mobile: string;
   role: 'applicant' | 'recruiter' | 'admin';
-  status: 'pending_approval' | 'approved' | 'rejected' | 'disabled';
+  status: 'pending_approval' | 'approved' | 'rejected' | 'disabled' | 'suspended';
   createdDate: string;
   lastLogin?: string;
   companyDetails?: {
@@ -93,3 +93,53 @@ export interface AdminStats {
   applicationsReceived: number;
   hiredCandidates: number;
 }
+
+export interface ShowcaseImage {
+  id: string;
+  url: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  badgeColor: string;
+  specs: string;
+}
+
+export interface TickerItem {
+  id: string;
+  text: string;
+  highlight: string;
+  color: string;
+}
+
+export interface SiteConfig {
+  header: {
+    platformName: string;
+    allianceBadge: string;
+    plantsLiveCount?: string;
+    livePlantsCount?: string;
+    tagline: string;
+  };
+  footer: {
+    copyrightText?: string;
+    copyrightName?: string;
+    contactPhone: string;
+    contactEmail: string;
+    addressText?: string;
+    contactAddress?: string;
+    socialLinks?: {
+      instagram: string;
+      facebook: string;
+      whatsapp: string;
+      linkedin: string;
+    };
+  };
+  socialLinks?: {
+    instagram: string;
+    facebook: string;
+    whatsapp: string;
+    linkedin: string;
+  };
+  showcaseImages: ShowcaseImage[];
+  tickerItems: TickerItem[];
+}
+

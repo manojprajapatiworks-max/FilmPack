@@ -86,9 +86,27 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
     }
   };
 
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const showNotice = (msg: string) => {
+    setActionMessage(msg);
+    setTimeout(() => setActionMessage(null), 4000);
+  };
+
   useEffect(() => {
     fetchJobsAndApplications();
   }, [currentUser]);
+
+  useEffect(() => {
+    if (isApplying || selectedJob !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isApplying, selectedJob]);
 
   // Handle Form Submission
   const handleApplySubmit = async (e: React.FormEvent) => {
@@ -129,11 +147,11 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
         fetchJobsAndApplications();
       } else {
         const errData = await res.json();
-        alert(errData.error || "Failed to submit application");
+        showNotice(errData.error || "Failed to submit application");
       }
     } catch (err) {
       console.error("Error submitting application", err);
-      alert("Error occurred while submitting your application.");
+      showNotice("Error occurred while submitting your application.");
     } finally {
       setIsSubmittingApp(false);
     }
@@ -204,7 +222,7 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
   // Profile Save
   const saveProfileDefaults = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Profile defaults updated. These will auto-populate subsequent application forms!");
+    showNotice("Profile defaults updated. These will auto-populate subsequent application forms!");
   };
 
   // Pre-fill profile defaults when starting an application
@@ -269,6 +287,16 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        {actionMessage && (
+          <div className="mb-6 bg-stone-900 text-amber-400 p-4 rounded-md shadow-md border border-amber-500/30 flex items-center justify-between font-mono text-xs">
+            <span className="flex items-center gap-2 font-bold uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+              {actionMessage}
+            </span>
+            <button onClick={() => setActionMessage(null)} className="text-stone-400 hover:text-white font-bold">✕</button>
+          </div>
+        )}
+
         {/* FIND JOBS VIEW */}
         {activeSection === "find_jobs" && !isApplying && (
           <div>

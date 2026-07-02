@@ -4,7 +4,27 @@ import Navbar from "./components/Navbar";
 import ApplicantDashboard from "./components/ApplicantDashboard";
 import RecruiterDashboard from "./components/RecruiterDashboard";
 import AdminDashboard from "./components/AdminDashboard";
-import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import PackagingFilmShowcase from "./components/PackagingFilmShowcase";
+import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, Globe, MapPin } from "lucide-react";
+
+const HD_ENTRANCE_IMAGES = [
+  {
+    url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+    label: "BOPP High-Speed Extrusion Line #1 (480 m/min)"
+  },
+  {
+    url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    label: "Metallized BOPET & Foil Deposition Chamber"
+  },
+  {
+    url: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80",
+    label: "Laser-Guided Slitting Desk & Roll Rewinding"
+  },
+  {
+    url: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80",
+    label: "3-Layer Co-Extruded CPP Retort Barrier Plant"
+  }
+];
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -13,6 +33,54 @@ export default function App() {
   // Authentication UI selection
   const [isLoginView, setIsLoginView] = useState(true);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [authBgIndex, setAuthBgIndex] = useState(0);
+
+  const [siteConfig, setSiteConfig] = useState<any>({
+    footer: {
+      copyrightName: "FilmPack Packaging Film Business Alliance",
+      copyrightText: "© 2026 FilmPack Alliance India. All Rights Reserved.",
+      contactPhone: "+91 98765 43210",
+      contactEmail: "careers@filmpack.global",
+      contactAddress: "Industrial Packaging Area, Phase-4, Mumbai, India",
+      addressText: "FilmPack Tower, Film City, Noida, UP 201301",
+      socialLinks: {
+        instagram: "https://instagram.com",
+        facebook: "https://facebook.com",
+        whatsapp: "https://whatsapp.com",
+        linkedin: "https://linkedin.com"
+      }
+    },
+    socialLinks: {
+      instagram: "https://instagram.com",
+      facebook: "https://facebook.com",
+      whatsapp: "https://whatsapp.com",
+      linkedin: "https://linkedin.com"
+    }
+  });
+
+  useEffect(() => {
+    fetch("/api/site-config")
+      .then(r => r.json())
+      .then(data => {
+        if (data) {
+          const socialLinks = data.socialLinks || data.footer?.socialLinks || {
+            instagram: "https://instagram.com",
+            facebook: "https://facebook.com",
+            whatsapp: "https://whatsapp.com",
+            linkedin: "https://linkedin.com"
+          };
+          setSiteConfig({ ...data, socialLinks, footer: { ...data.footer, socialLinks } });
+        }
+      })
+      .catch(e => console.error("Error loading site config in App", e));
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAuthBgIndex((prev) => (prev + 1) % HD_ENTRANCE_IMAGES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   // Signup form
   const [signupForm, setSignupForm] = useState({
@@ -164,7 +232,8 @@ export default function App() {
       <div className="flex-1 flex flex-col">
         {currentUser ? (
           /* Role Dashboard Router Router */
-          <div className="flex-1">
+          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+            <PackagingFilmShowcase />
             {currentUser.role === "applicant" && (
               <ApplicantDashboard currentUser={currentUser} />
             )}
@@ -179,72 +248,80 @@ export default function App() {
           /* Authentication Screen Screen */
           <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-4rem-4.5rem)]">
             
-            {/* Left Decorative/Info Side - Modern Packaging Web Aesthetic */}
-            <div className="hidden lg:flex lg:col-span-5 bg-stone-900 text-stone-100 p-12 flex-col justify-between relative overflow-hidden border-r border-stone-800">
-              {/* Abstract Layered Film Effect */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(139,129,105,0.15),transparent)] pointer-events-none" />
+            {/* Left Decorative/Info Side - Joyful Packaging Film Web Aesthetic with HD Photo Reel */}
+            <div className="hidden lg:flex lg:col-span-5 bg-stone-900 text-stone-100 p-10 flex-col justify-between relative overflow-hidden border-r border-stone-800 shadow-2xl">
+              {/* Animated HD Photo Background */}
+              <img
+                key={authBgIndex}
+                src={HD_ENTRANCE_IMAGES[authBgIndex].url}
+                alt="Packaging Film Manufacturing"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-30 scale-105 transition-all duration-1000 ease-out pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/80 to-stone-950/70 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
               
-              {/* Overlay graphic representing rolled polymer layers (film rolls) */}
-              <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full border border-stone-800 pointer-events-none opacity-40" />
-              <div className="absolute -right-32 -top-32 w-96 h-96 rounded-full border border-stone-700/30 pointer-events-none opacity-40" />
-              <div className="absolute -right-44 -top-44 w-[480px] h-[480px] rounded-full border border-stone-700/15 pointer-events-none opacity-40" />
-              
-              {/* Stylized film roll drawing */}
-              <div className="absolute left-[-50px] bottom-[-100px] w-72 h-72 rounded-sm border border-stone-700/30 rotate-45 pointer-events-none">
-                <div className="w-full h-full rounded-full border-4 border-stone-700/20 flex items-center justify-center">
-                  <div className="w-1/2 h-1/2 rounded-full border-2 border-stone-700/30" />
-                </div>
-              </div>
-
               <div className="space-y-8 relative z-10">
-                <div className="inline-flex items-center gap-2 bg-stone-800/80 border border-stone-700 text-stone-300 px-3 py-1 rounded-sm text-[10px] font-mono uppercase tracking-widest">
-                  <Film className="h-3.5 w-3.5 text-stone-400" />
-                  Industrial Alliance
+                <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-widest backdrop-blur-md shadow-sm font-bold">
+                  <Film className="h-4 w-4 text-amber-400" />
+                  INDIA'S #1 FILM MANUFACTURING NETWORK
                 </div>
                 
-                <div className="space-y-4">
-                  <h2 className="text-4xl font-serif font-bold text-white tracking-tight leading-tight">
+                <div className="space-y-3">
+                  <h2 className="text-4xl font-serif font-bold text-white tracking-tight leading-tight drop-shadow-md">
                     The Pulse of <br />
-                    <span className="italic text-stone-300 font-normal">Flexible Packaging</span> <br />
+                    <span className="italic text-amber-300 font-normal">Flexible Packaging</span> <br />
                     Careers.
                   </h2>
-                  <p className="text-stone-400 text-sm leading-relaxed font-serif">
-                    Connecting certified operators, slitting technicians, and plant managers with India's leading film manufacturing facilities.
+                  <p className="text-stone-300 text-sm leading-relaxed font-serif drop-shadow">
+                    Connecting certified extrusion operators, slitting technicians, and plant managers with leading BOPP, BOPET & CPP film facilities.
                   </p>
                 </div>
 
-                {/* Layered polymer sheet representation */}
-                <div className="pt-6 space-y-3">
-                  <div className="relative p-5 bg-stone-800/40 border border-stone-700/60 rounded-sm backdrop-blur-md">
-                    <p className="text-[10px] font-mono uppercase tracking-wider text-stone-400 mb-1">Co-Extrusion Layer Tech</p>
-                    <p className="text-xs font-serif text-stone-300 italic">BOPP • BOPET • CPP • Barrier Films</p>
-                    <div className="mt-4 flex gap-1 h-1.5">
-                      <div className="flex-1 bg-stone-600 rounded-full" title="Top Sealing Layer (2µ)" />
-                      <div className="flex-[3_3_0%] bg-stone-500 rounded-full" title="Core Barrier Layer (12µ)" />
-                      <div className="flex-1 bg-stone-600 rounded-full" title="Printable Layer (2µ)" />
+                {/* Live HD Image Caption & Grade Badge */}
+                <div className="pt-2 space-y-3">
+                  <div className="relative p-5 bg-stone-900/85 border border-stone-700/80 rounded-md backdrop-blur-md shadow-xl">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400 flex items-center gap-1.5 font-bold">
+                        <span className="w-2 h-2 bg-emerald-400 rounded-full inline-block" />
+                        LIVE PLANT FEED
+                      </p>
+                      <span className="text-[9px] font-mono text-stone-400 bg-stone-800 px-2 py-0.5 rounded">LINE #{authBgIndex + 1}</span>
                     </div>
-                    <div className="mt-2 flex justify-between text-[8px] font-mono text-stone-500">
+                    <p className="text-xs font-serif text-white font-bold mb-3">{HD_ENTRANCE_IMAGES[authBgIndex].label}</p>
+                    
+                    <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 mb-1 border-t border-stone-800 pt-2">Co-Extrusion Layer Structure</p>
+                    <div className="mt-2 flex gap-1 h-2">
+                      <div className="flex-1 bg-amber-500/80 rounded-full shadow-2xs" title="Top Sealing Layer (2µ)" />
+                      <div className="flex-[3_3_0%] bg-emerald-500/80 rounded-full shadow-2xs" title="Core Barrier Layer (12µ)" />
+                      <div className="flex-1 bg-amber-500/80 rounded-full shadow-2xs" title="Printable Layer (2µ)" />
+                    </div>
+                    <div className="mt-1.5 flex justify-between text-[8px] font-mono text-stone-400 font-semibold">
                       <span>Seal (2µ)</span>
-                      <span>Core (12µ)</span>
-                      <span>Print (2µ)</span>
+                      <span>Core BOPP/CPP (12µ)</span>
+                      <span>Corona Print (2µ)</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 relative z-10 pt-12 border-t border-stone-800/60">
-                <div className="grid grid-cols-2 gap-4 text-left">
-                  <div>
-                    <p className="text-2xl font-black text-white font-mono">14+</p>
-                    <p className="text-[10px] text-stone-400 uppercase tracking-widest font-mono">Active Plants</p>
+              <div className="space-y-4 relative z-10 pt-6 border-t border-stone-800/80">
+                <div className="grid grid-cols-3 gap-2.5 text-left">
+                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
+                    <p className="text-xl font-black text-white font-mono">14+</p>
+                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Plants Live</p>
                   </div>
-                  <div>
-                    <p className="text-2xl font-black text-white font-mono">100%</p>
-                    <p className="text-[10px] text-stone-400 uppercase tracking-widest font-mono">Verified Audits</p>
+                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
+                    <p className="text-xl font-black text-amber-400 font-mono">480m</p>
+                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Line Speed</p>
+                  </div>
+                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
+                    <p className="text-xl font-black text-emerald-400 font-mono">100%</p>
+                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Audit Certified</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-stone-500 font-mono tracking-wider uppercase">
-                  SECURE ENTERPRISE HIRING DESK
+                <p className="text-[10px] text-stone-400 font-mono tracking-wider uppercase flex items-center gap-1.5 font-bold">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
+                  SECURE ENTERPRISE HIRING GATEWAY
                 </p>
               </div>
             </div>
@@ -484,10 +561,79 @@ export default function App() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="bg-[#F5F2EB] border-t border-stone-200 py-6 text-center text-[10px] text-stone-500 font-mono uppercase tracking-widest leading-loose">
-        <div>FilmPack Flexible Packaging Industry Careers Hub © 2026. All Rights Reserved.</div>
-        <div className="mt-1 text-[9px] text-stone-400">Simulated SMS / Email Carrier Gateways: ONLINE</div>
+      {/* Dynamic & Editable Footer with Social Media Jump Icons - Requirement 5 */}
+      <footer id="website-footer" className="bg-[#18181b] text-stone-300 font-sans border-t border-stone-800 py-10 px-4 sm:px-6 lg:px-8 mt-auto">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-stone-800 text-left">
+          <div className="space-y-2">
+            <h4 className="font-serif font-bold text-base text-white tracking-tight">{siteConfig?.footer?.copyrightName || siteConfig?.footer?.copyrightText || "FilmPack Alliance"}</h4>
+            <p className="text-xs text-stone-400 font-serif leading-relaxed">{siteConfig?.header?.tagline || "BOPP • BOPET • CPP • BARRIER FILM JOBS"}</p>
+            <p className="text-[11px] text-stone-500 font-mono pt-1">Simulated SMS / Email Carrier Gateways: <span className="text-emerald-400 font-bold">● ONLINE</span></p>
+          </div>
+
+          <div className="space-y-2 font-mono text-xs text-stone-400">
+            <p className="font-bold text-stone-200 uppercase text-[10px] tracking-widest mb-1">Corporate Alliance Desk</p>
+            <p className="flex items-center gap-2">
+              <Phone className="h-3.5 w-3.5 text-amber-500" /> {siteConfig?.footer?.contactPhone || "+91 98765 43210"}
+            </p>
+            <p className="flex items-center gap-2">
+              <Mail className="h-3.5 w-3.5 text-amber-500" /> {siteConfig?.footer?.contactEmail || "careers@filmpack.global"}
+            </p>
+            <p className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5 text-amber-500" /> {siteConfig?.footer?.contactAddress || siteConfig?.footer?.addressText || "Industrial Packaging Area, Phase-4, Mumbai"}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <p className="font-bold text-stone-200 uppercase font-mono text-[10px] tracking-widest">Connect & Jump Directly</p>
+            <p className="text-xs text-stone-400 font-serif">Follow live packaging plant updates and operator openings across social channels:</p>
+            <div className="flex items-center gap-3 pt-1 flex-wrap">
+              <a
+                href={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.instagram || "https://instagram.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-stone-800 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 text-stone-300 hover:text-white p-2.5 rounded-sm transition shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold font-mono uppercase"
+                title="Jump directly to official Instagram page"
+              >
+                <Instagram className="h-4 w-4 text-pink-400" />
+                <span>Instagram</span>
+              </a>
+              <a
+                href={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.facebook || "https://facebook.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-stone-800 hover:bg-blue-600 text-stone-300 hover:text-white p-2.5 rounded-sm transition shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold font-mono uppercase"
+                title="Jump directly to official Facebook page"
+              >
+                <Facebook className="h-4 w-4 text-blue-400" />
+                <span>Facebook</span>
+              </a>
+              <a
+                href={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.whatsapp || "https://whatsapp.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-stone-800 hover:bg-emerald-600 text-stone-300 hover:text-white p-2.5 rounded-sm transition shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold font-mono uppercase"
+                title="Jump directly to WhatsApp Helpdesk"
+              >
+                <MessageCircle className="h-4 w-4 text-emerald-400" />
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.linkedin || "https://linkedin.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-stone-800 hover:bg-cyan-600 text-stone-300 hover:text-white p-2.5 rounded-sm transition shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold font-mono uppercase"
+                title="Jump directly to official LinkedIn page"
+              >
+                <Linkedin className="h-4 w-4 text-cyan-400" />
+                <span>LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-6 text-center text-[10px] text-stone-500 font-mono uppercase tracking-widest">
+          {siteConfig?.footer?.copyrightName || siteConfig?.footer?.copyrightText || "FilmPack Packaging Film Business Alliance"} © 2026. All Rights Reserved.
+        </div>
       </footer>
     </div>
   );

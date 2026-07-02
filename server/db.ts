@@ -15,7 +15,7 @@ export interface User {
   email: string;
   passwordHash: string; // Stored as-is or simulated hash
   role: 'applicant' | 'recruiter' | 'admin';
-  status: 'pending_approval' | 'approved' | 'rejected' | 'disabled';
+  status: 'pending_approval' | 'approved' | 'rejected' | 'disabled' | 'suspended';
   createdDate: string;
   lastLogin?: string;
   companyDetails?: {
@@ -96,15 +96,150 @@ export interface Interview {
   status: 'scheduled' | 'completed' | 'cancelled';
 }
 
+export interface ShowcaseImage {
+  id: string;
+  url: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  badgeColor: string;
+  specs: string;
+}
+
+export interface TickerItem {
+  id: string;
+  text: string;
+  highlight: string;
+  color: string;
+}
+
+export interface SiteConfig {
+  header: {
+    platformName: string;
+    allianceBadge: string;
+    plantsLiveCount?: string;
+    livePlantsCount?: string;
+    tagline: string;
+  };
+  footer: {
+    copyrightText?: string;
+    copyrightName?: string;
+    contactPhone: string;
+    contactEmail: string;
+    addressText?: string;
+    contactAddress?: string;
+    socialLinks?: {
+      instagram: string;
+      facebook: string;
+      whatsapp: string;
+      linkedin: string;
+    };
+  };
+  socialLinks?: {
+    instagram: string;
+    facebook: string;
+    whatsapp: string;
+    linkedin: string;
+  };
+  showcaseImages: ShowcaseImage[];
+  tickerItems: TickerItem[];
+}
+
+export const INITIAL_SITE_CONFIG: SiteConfig = {
+  header: {
+    platformName: "FILMPACK™",
+    allianceBadge: "ALLIANCE",
+    plantsLiveCount: "● 14 PLANTS LIVE",
+    livePlantsCount: "● 14 PLANTS LIVE",
+    tagline: "BOPP • BOPET • CPP • BARRIER FILM JOBS"
+  },
+  footer: {
+    copyrightText: "© 2026 FilmPack Alliance India. All Rights Reserved.",
+    copyrightName: "FilmPack Packaging Film Business Alliance",
+    contactPhone: "+91 98765 43210",
+    contactEmail: "support@filmpack.com",
+    addressText: "FilmPack Tower, Film City, Noida, UP 201301",
+    contactAddress: "Industrial Packaging Area, Phase-4, Mumbai, India",
+    socialLinks: {
+      instagram: "https://instagram.com",
+      facebook: "https://facebook.com",
+      whatsapp: "https://wa.me/919876543210",
+      linkedin: "https://linkedin.com"
+    }
+  },
+  socialLinks: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    whatsapp: "https://wa.me/919876543210",
+    linkedin: "https://linkedin.com"
+  },
+  showcaseImages: [
+    {
+      id: "img_1",
+      url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+      title: "High-Speed BOPP Extrusion Line #1",
+      subtitle: "Automated 8.7m Bruckner line producing ultra-clear sealing films at 480 m/min.",
+      category: "BOPP FILMS",
+      badgeColor: "bg-emerald-500 text-stone-950",
+      specs: "Thickness: 15µ - 40µ • Tensile Strength: 140 MPa"
+    },
+    {
+      id: "img_2",
+      url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+      title: "Metallized BOPET & Vacuum Deposition Desk",
+      subtitle: "Mirror-finish aluminum metallization for premium snack barrier and UV protection.",
+      category: "METALLIZED FOIL",
+      badgeColor: "bg-amber-500 text-stone-950",
+      specs: "OD: 2.2 - 2.8 • OTR < 0.5 cc/m²/day"
+    },
+    {
+      id: "img_3",
+      url: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80",
+      title: "Precision Slitting & Roll Rewinding Desk",
+      subtitle: "Laser-guided slitting machines preparing customized master rolls for packaging converters.",
+      category: "SLITTING DESK",
+      badgeColor: "bg-sky-500 text-stone-950",
+      specs: "Slit Width: 50mm - 2000mm • Zero-taper winding"
+    },
+    {
+      id: "img_4",
+      url: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80",
+      title: "Co-Extruded CPP & Barrier Sealing Plant",
+      subtitle: "3-layer and 5-layer cast polypropylene lines engineered for retort pouches and medical packaging.",
+      category: "CPP BARRIER",
+      badgeColor: "bg-purple-500 text-white",
+      specs: "Seal Initiation Temp: 105°C • Puncture Resistant"
+    },
+    {
+      id: "img_5",
+      url: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=1200&q=80",
+      title: "Eco-Green Recyclable Monomaterial Films",
+      subtitle: "Pioneering sustainable 100% recyclable polyolefin laminate solutions for global food brands.",
+      category: "SUSTAINABILITY",
+      badgeColor: "bg-teal-500 text-white",
+      specs: "ISCC Plus Certified • 30% Post-Consumer Recyclate"
+    }
+  ],
+  tickerItems: [
+    { id: "tck_1", text: "LINE #1 (BOPP 15µ Transparent):", highlight: "480 m/min • Slitting Desk #4 Recruiting", color: "text-emerald-400" },
+    { id: "tck_2", text: "LINE #2 (Metallized BOPET 12µ Foil):", highlight: "99.4% OEE • Shift Supervisor Required", color: "text-amber-400" },
+    { id: "tck_3", text: "LINE #3 (Multi-layer CPP Barrier Film):", highlight: "ACTIVE EXTRUSION • QC Chemist Walk-ins Open", color: "text-sky-400" },
+    { id: "tck_4", text: "ALLIANCE AUDIT:", highlight: "ISO 9001:2015 & BRCGS Certified • Top Packaging Employer India", color: "text-purple-400" },
+    { id: "tck_5", text: "ROLLS DISPATCHED TODAY:", highlight: "1,420 MT across Gujarat, Maharashtra & Daman Plants", color: "text-emerald-400" }
+  ]
+};
+
 export interface DatabaseSchema {
   users: User[];
   jobs: Job[];
   applications: Application[];
   notifications: Notification[];
   interviews: Interview[];
+  siteConfig?: SiteConfig;
 }
 
 const INITIAL_DB: DatabaseSchema = {
+  siteConfig: INITIAL_SITE_CONFIG,
   users: [
     {
       id: "usr_admin",
@@ -344,6 +479,10 @@ class Database {
       if (fs.existsSync(DB_PATH)) {
         const fileContent = fs.readFileSync(DB_PATH, 'utf-8');
         this.data = JSON.parse(fileContent);
+        if (!this.data.siteConfig) {
+          this.data.siteConfig = INITIAL_SITE_CONFIG;
+          this.save();
+        }
         this.checkAndCloseExpiredJobs();
       } else {
         this.save();
@@ -430,6 +569,54 @@ class Database {
 
   public saveInterviews(interviews: Interview[]) {
     this.data.interviews = interviews;
+    this.save();
+  }
+
+  // Site Config
+  public getSiteConfig(): SiteConfig {
+    this.load();
+    const cfg = this.data.siteConfig || INITIAL_SITE_CONFIG;
+    const socialLinks = cfg.socialLinks || cfg.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    return {
+      ...cfg,
+      header: {
+        ...INITIAL_SITE_CONFIG.header,
+        ...cfg.header,
+        plantsLiveCount: cfg.header?.plantsLiveCount || cfg.header?.livePlantsCount || "● 14 PLANTS LIVE",
+        livePlantsCount: cfg.header?.livePlantsCount || cfg.header?.plantsLiveCount || "● 14 PLANTS LIVE",
+      },
+      footer: {
+        ...INITIAL_SITE_CONFIG.footer,
+        ...cfg.footer,
+        copyrightText: cfg.footer?.copyrightText || cfg.footer?.copyrightName || "© 2026 FilmPack Alliance India. All Rights Reserved.",
+        copyrightName: cfg.footer?.copyrightName || cfg.footer?.copyrightText || "FilmPack Packaging Film Business Alliance",
+        addressText: cfg.footer?.addressText || cfg.footer?.contactAddress || "FilmPack Tower, Film City, Noida, UP 201301",
+        contactAddress: cfg.footer?.contactAddress || cfg.footer?.addressText || "Industrial Packaging Area, Phase-4, Mumbai, India",
+        socialLinks
+      },
+      socialLinks
+    };
+  }
+
+  public saveSiteConfig(config: SiteConfig) {
+    const socialLinks = config.socialLinks || config.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    this.data.siteConfig = {
+      ...config,
+      header: {
+        ...config.header,
+        plantsLiveCount: config.header?.plantsLiveCount || config.header?.livePlantsCount || "● 14 PLANTS LIVE",
+        livePlantsCount: config.header?.livePlantsCount || config.header?.plantsLiveCount || "● 14 PLANTS LIVE",
+      },
+      footer: {
+        ...config.footer,
+        copyrightText: config.footer?.copyrightText || config.footer?.copyrightName || "© 2026 FilmPack Alliance India. All Rights Reserved.",
+        copyrightName: config.footer?.copyrightName || config.footer?.copyrightText || "FilmPack Packaging Film Business Alliance",
+        addressText: config.footer?.addressText || config.footer?.contactAddress || "FilmPack Tower, Film City, Noida, UP 201301",
+        contactAddress: config.footer?.contactAddress || config.footer?.addressText || "Industrial Packaging Area, Phase-4, Mumbai, India",
+        socialLinks
+      },
+      socialLinks
+    };
     this.save();
   }
 }

@@ -59,6 +59,10 @@ app.post("/api/auth/login", (req, res) => {
     return res.status(403).json({ error: "Your account has been disabled by the Administrator." });
   }
 
+  if (user.status === "suspended") {
+    return res.status(403).json({ error: "Profile Suspended, please contact FilmPack Team" });
+  }
+
   if (user.status === "rejected") {
     return res.status(403).json({ error: "Your recruiter registration request was rejected by the Administrator." });
   }
@@ -133,9 +137,16 @@ app.post("/api/auth/register", (req, res) => {
 // GET Jobs (With optional filter parameters)
 app.get("/api/jobs", (req, res) => {
   const jobs = db.getJobs();
-  const { department, location, experience, salary, companyName, recruiterId } = req.query;
+  const users = db.getUsers();
+  const suspendedRecruiterIds = new Set(users.filter(u => u.status === "suspended").map(u => u.id));
+
+  const { department, location, experience, salary, companyName, recruiterId, includeSuspended } = req.query;
 
   let filteredJobs = [...jobs];
+
+  if (includeSuspended !== "true") {
+    filteredJobs = filteredJobs.filter(j => !suspendedRecruiterIds.has(j.recruiterId));
+  }
 
   if (recruiterId) {
     filteredJobs = filteredJobs.filter(j => j.recruiterId === recruiterId);
@@ -614,19 +625,25 @@ app.put("/api/admin/users/:id/status", (req, res) => {
   users[idx].status = status;
   db.saveUsers(users);
 
-  // Send simulation notification for Recruiter Approval
-  if (users[idx].role === "recruiter" && (status === "approved" || status === "rejected")) {
+  // Send simulation notification for Recruiter Approval / Suspension
+  if (users[idx].role === "recruiter" && (status === "approved" || status === "rejected" || status === "suspended")) {
     const nots = db.getNotifications();
+    let messageText = `Dear ${users[idx].name},\n\nYour recruiter account registration at FilmPack Careers has been ${status.toUpperCase()} by the Administrator.\n${
+      status === "approved" 
+        ? "You can now log in using your registered credentials to post jobs and view candidate match metrics." 
+        : "Please contact support if you believe this was an error."
+    }\n\nRegards,\nFilmPack Admin Office`;
+
+    if (status === "suspended") {
+      messageText = `Dear ${users[idx].name},\n\nYour recruiter account at FilmPack Careers has been TEMPORARILY SUSPENDED by the Administrator.\nAll your posted jobs have been hidden from public view and login access is restricted.\nPlease contact FilmPack Team for clarification.\n\nRegards,\nFilmPack Admin Office`;
+    }
+
     const msg: Notification = {
       id: generateId("not"),
       userId: req.params.id,
       type: "email",
       recipient: users[idx].email,
-      message: `Dear ${users[idx].name},\n\nYour recruiter account registration at FilmPack Careers has been ${status.toUpperCase()} by the Administrator.\n${
-        status === "approved" 
-          ? "You can now log in using your registered credentials to post jobs and view candidate match metrics." 
-          : "Please contact support if you believe this was an error."
-      }\n\nRegards,\nFilmPack Admin Office`,
+      message: messageText,
       sentAt: new Date().toISOString()
     };
     nots.push(msg);
@@ -787,14 +804,53 @@ app.get("/api/export/candidates", (req, res) => {
 // GET Notification Log
 app.get("/api/notifications", (req, res) => {
   const nots = db.getNotifications();
-  const { userId } = req.query;
+  const { userId, role } = req.query;
   let filtered = [...nots];
-  if (userId) {
-    filtered = filtered.filter(n => n.userId === userId);
+  if (role !== "admin" && userId) {
+    filtered = filtered.filter(n => n.userId === userId || n.recipient === userId || n.recipient.includes(userId as string));
   }
   // Sort descending by date
   filtered.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
   res.json(filtered);
+});
+
+// POST Trigger Simulated Test Alert
+app.post("/api/notifications/test", (req, res) => {
+  const { userId, recipient, message, type } = req.body;
+  const nots = db.getNotifications();
+  const newNotif: Notification = {
+    id: generateId("not"),
+    userId: userId || "usr_admin",
+    type: type || "whatsapp",
+    recipient: recipient || "+91 98765 43210",
+    message: message || "Simulated System Alert: Alliance production stream active. 14 plants synchronized.",
+    sentAt: new Date().toISOString()
+  };
+  nots.push(newNotif);
+  db.saveNotifications(nots);
+  res.json(newNotif);
+});
+
+// DELETE Clear All Notifications (or for a user)
+app.delete("/api/notifications", (req, res) => {
+  const { userId, role } = req.query;
+  if (role === "admin") {
+    // Admin clears the entire system log
+    db.saveNotifications([]);
+  } else if (userId) {
+    const users = db.getUsers();
+    const currentUser = users.find(u => u.id === userId);
+    const email = currentUser?.email || "";
+    const mobile = currentUser?.mobile || "";
+    const nots = db.getNotifications().filter(n => {
+      const isMatch = n.userId === userId || n.recipient === userId || (email && n.recipient === email) || (mobile && n.recipient === mobile);
+      return !isMatch; // Keep notifications that DO NOT belong to this user
+    });
+    db.saveNotifications(nots);
+  } else {
+    db.saveNotifications([]);
+  }
+  res.json({ success: true });
 });
 
 // GET Portal Statistics
@@ -818,6 +874,21 @@ app.get("/api/admin/stats", (req, res) => {
     applicationsReceived,
     hiredCandidates
   });
+});
+
+// GET Site Config
+app.get("/api/site-config", (req, res) => {
+  res.json(db.getSiteConfig());
+});
+
+// PUT Update Site Config (Admin only)
+app.put("/api/admin/site-config", (req, res) => {
+  const config = req.body;
+  if (!config || !config.header || !config.footer) {
+    return res.status(400).json({ error: "Invalid site configuration object." });
+  }
+  db.saveSiteConfig(config);
+  res.json({ success: true, config: db.getSiteConfig() });
 });
 
 // ==========================================
