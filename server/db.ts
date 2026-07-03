@@ -24,6 +24,7 @@ export interface User {
     mobile: string;
     email: string;
   };
+  profileDefaults?: any;
 }
 
 export interface Job {
@@ -134,6 +135,7 @@ export interface SiteConfig {
       facebook: string;
       whatsapp: string;
       linkedin: string;
+      line?: string;
     };
   };
   socialLinks?: {
@@ -141,7 +143,9 @@ export interface SiteConfig {
     facebook: string;
     whatsapp: string;
     linkedin: string;
+    line?: string;
   };
+  jobCategories?: string[];
   showcaseImages: ShowcaseImage[];
   tickerItems: TickerItem[];
 }
@@ -166,15 +170,29 @@ export const INITIAL_SITE_CONFIG: SiteConfig = {
       instagram: "https://instagram.com",
       facebook: "https://facebook.com",
       whatsapp: "https://wa.me/919876543210",
-      linkedin: "https://linkedin.com"
+      linkedin: "https://linkedin.com",
+      line: "https://line.me"
     }
   },
   socialLinks: {
     instagram: "https://instagram.com",
     facebook: "https://facebook.com",
     whatsapp: "https://wa.me/919876543210",
-    linkedin: "https://linkedin.com"
+    linkedin: "https://linkedin.com",
+    line: "https://line.me"
   },
+  jobCategories: [
+    "Extrusion Operator",
+    "Printing Operator",
+    "Lamination Operator",
+    "Slitting Operator",
+    "QC Engineer",
+    "Production Manager",
+    "Maintenance Engineer",
+    "Sales & Marketing",
+    "R&D",
+    "Warehouse"
+  ],
   showcaseImages: [
     {
       id: "img_1",
@@ -578,11 +596,15 @@ class Database {
   public getSiteConfig(): SiteConfig {
     this.load();
     const cfg = this.data.siteConfig || INITIAL_SITE_CONFIG;
-    const socialLinks = cfg.socialLinks || cfg.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    const socialLinks = {
+      ...INITIAL_SITE_CONFIG.footer.socialLinks!,
+      ...(cfg.socialLinks || cfg.footer?.socialLinks || {})
+    };
     const showcaseImages = (cfg.showcaseImages || INITIAL_SITE_CONFIG.showcaseImages).map(img => ({
       ...img,
       specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
     }));
+    const jobCategories = cfg.jobCategories && cfg.jobCategories.length > 0 ? cfg.jobCategories : INITIAL_SITE_CONFIG.jobCategories!;
     return {
       ...cfg,
       header: {
@@ -601,16 +623,21 @@ class Database {
         socialLinks
       },
       socialLinks,
+      jobCategories,
       showcaseImages
     };
   }
 
   public saveSiteConfig(config: SiteConfig) {
-    const socialLinks = config.socialLinks || config.footer?.socialLinks || INITIAL_SITE_CONFIG.footer.socialLinks!;
+    const socialLinks = {
+      ...INITIAL_SITE_CONFIG.footer.socialLinks!,
+      ...(config.socialLinks || config.footer?.socialLinks || {})
+    };
     const showcaseImages = (config.showcaseImages || INITIAL_SITE_CONFIG.showcaseImages).map(img => ({
       ...img,
       specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
     }));
+    const jobCategories = config.jobCategories && config.jobCategories.length > 0 ? config.jobCategories : INITIAL_SITE_CONFIG.jobCategories!;
     this.data.siteConfig = {
       ...config,
       header: {
@@ -627,6 +654,7 @@ class Database {
         socialLinks
       },
       socialLinks,
+      jobCategories,
       showcaseImages
     };
     this.save();

@@ -4,9 +4,10 @@ import { Search, MapPin, Award, IndianRupee, Calendar, FileText, Camera, UploadC
 
 interface ApplicantDashboardProps {
   currentUser: User;
+  siteConfig?: any;
 }
 
-export default function ApplicantDashboard({ currentUser }: ApplicantDashboardProps) {
+export default function ApplicantDashboard({ currentUser, siteConfig }: ApplicantDashboardProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -51,8 +52,9 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
   const [isSubmittingApp, setIsSubmittingApp] = useState(false);
   const [appSuccessMessage, setAppSuccessMessage] = useState<string | null>(null);
   const [matchReport, setMatchReport] = useState<{ score: number; feedback: string } | null>(null);
+  const [isProfileSaved, setIsProfileSaved] = useState(Boolean(currentUser?.profileDefaults?.qualification && currentUser?.profileDefaults?.experience));
 
-  const filmCategories = [
+  const filmCategories = siteConfig?.jobCategories || [
     "Extrusion Operator",
     "Printing Operator",
     "Lamination Operator",
@@ -95,18 +97,13 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
 
   useEffect(() => {
     fetchJobsAndApplications();
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (isApplying || selectedJob !== null) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+    if (currentUser.profileDefaults) {
+      setProfileData(prev => ({ ...prev, ...currentUser.profileDefaults }));
+      if (currentUser.profileDefaults.qualification && currentUser.profileDefaults.experience) {
+        setIsProfileSaved(true);
+      }
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isApplying, selectedJob]);
+  }, [currentUser]);
 
   // Handle Form Submission
   const handleApplySubmit = async (e: React.FormEvent) => {
@@ -220,9 +217,29 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
   };
 
   // Profile Save
-  const saveProfileDefaults = (e: React.FormEvent) => {
+  const saveProfileDefaults = async (e: React.FormEvent) => {
     e.preventDefault();
-    showNotice("Profile defaults updated. These will auto-populate subsequent application forms!");
+    if (!profileData.qualification.trim() || !profileData.experience.trim()) {
+      showNotice("Please fill in at least Highest Qualification and Years of Experience before saving.");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/${currentUser.id}/profile-defaults`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profileData)
+      });
+      if (res.ok) {
+        setIsProfileSaved(true);
+        showNotice("Profile defaults saved successfully! You can now apply for jobs.");
+      } else {
+        setIsProfileSaved(true);
+        showNotice("Profile defaults updated locally.");
+      }
+    } catch (err) {
+      setIsProfileSaved(true);
+      showNotice("Profile defaults updated locally.");
+    }
   };
 
   // Pre-fill profile defaults when starting an application
@@ -252,6 +269,8 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
     return matchesSearch && matchesDept && matchesLoc && matchesExp;
   });
 
+  const openJobsCount = jobs.filter(j => j.status === "open").length;
+
   return (
     <div className="min-h-screen bg-[#FCFAF6] text-stone-900 font-sans pb-12">
       {/* Tab Selectors */}
@@ -264,7 +283,7 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
                 activeSection === "find_jobs" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
-              Search Film Jobs
+              Search Film Jobs ({openJobsCount})
             </button>
             <button
               onClick={() => { setActiveSection("my_applications"); setIsApplying(false); setSelectedJob(null); }}
@@ -301,9 +320,33 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
         {activeSection === "find_jobs" && !isApplying && (
           <div>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-stone-900 tracking-tight editorial-title">Flexible Packaging Vacancies</h2>
+              <h2 className="text-2xl font-bold text-stone-900 tracking-tight editorial-title flex items-center gap-3 flex-wrap">
+                <span>Flexible Packaging Vacancies</span>
+                <span className="text-xs bg-stone-900 text-white px-3 py-1 rounded-sm font-mono font-bold tracking-wider shadow-2xs">
+                  {openJobsCount} Total Vacancies Open
+                </span>
+              </h2>
               <p className="text-xs text-stone-500 font-serif italic mt-1">Search active jobs across co-extrusion, gravure, QC lab testing, and maintenance operators.</p>
             </div>
+
+            {!isProfileSaved && (
+              <div className="mb-6 bg-amber-50 border-2 border-amber-400 p-4 rounded-sm flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-amber-900 font-serif text-sm">Action Required: Complete Resume Profile Defaults</h4>
+                    <p className="text-xs text-amber-800 font-sans mt-0.5">You must complete and save your Resume Profile Defaults before submitting job applications.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setIsApplying(false); setSelectedJob(null); setActiveSection("profile"); }}
+                  className="bg-amber-900 hover:bg-amber-800 text-white text-xs font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-sm shadow-2xs whitespace-nowrap cursor-pointer"
+                >
+                  Complete Profile →
+                </button>
+              </div>
+            )}
 
             {/* Filter Panel */}
             <div className="bg-white border border-stone-200 rounded-sm p-4 mb-6 shadow-xs">
@@ -437,6 +480,11 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
                       >
                         Apply for Job
                       </button>
+                      {!isProfileSaved && (
+                        <span className="text-[10px] font-mono text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-sm font-bold flex items-center gap-1" title="Complete Resume Profile Defaults first">
+                          <AlertCircle className="h-3 w-3" /> Profile Req.
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -463,6 +511,25 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
                 <span className="text-xs text-stone-500 font-serif italic">at {selectedJob.companyName}</span>
               </div>
             </div>
+
+            {!isProfileSaved && !appSuccessMessage && (
+              <div className="mb-6 bg-amber-50 border-2 border-amber-400 p-4 rounded-sm flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-amber-900 font-serif text-sm">Action Required: Complete Resume Profile Defaults</h4>
+                    <p className="text-xs text-amber-800 font-sans mt-0.5">You must complete and save your Resume Profile Defaults before submitting job applications.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setIsApplying(false); setSelectedJob(null); setActiveSection("profile"); }}
+                  className="bg-amber-900 hover:bg-amber-800 text-white text-xs font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-sm shadow-2xs whitespace-nowrap cursor-pointer"
+                >
+                  Complete Profile →
+                </button>
+              </div>
+            )}
 
             {appSuccessMessage ? (
               <div className="py-8 space-y-6 text-center">
@@ -805,8 +872,10 @@ export default function ApplicantDashboard({ currentUser }: ApplicantDashboardPr
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmittingApp}
-                    className="bg-stone-900 hover:bg-stone-850 text-white text-xs font-mono uppercase tracking-widest py-2.5 px-8 rounded-sm shadow-xs transition flex items-center justify-center gap-2 font-bold cursor-pointer"
+                    disabled={isSubmittingApp || !isProfileSaved}
+                    className={`text-xs font-mono uppercase tracking-widest py-2.5 px-8 rounded-sm shadow-xs transition flex items-center justify-center gap-2 font-bold cursor-pointer ${
+                      !isProfileSaved ? "bg-stone-300 text-stone-500 cursor-not-allowed" : "bg-stone-900 hover:bg-stone-850 text-white"
+                    }`}
                   >
                     {isSubmittingApp ? (
                       <>

@@ -13,6 +13,7 @@ export interface User {
     mobile: string;
     email: string;
   };
+  profileDefaults?: any;
 }
 
 export interface Job {
@@ -132,6 +133,7 @@ export interface SiteConfig {
       facebook: string;
       whatsapp: string;
       linkedin: string;
+      line?: string;
     };
   };
   socialLinks?: {
@@ -139,7 +141,9 @@ export interface SiteConfig {
     facebook: string;
     whatsapp: string;
     linkedin: string;
+    line?: string;
   };
+  jobCategories?: string[];
   showcaseImages: ShowcaseImage[];
   tickerItems: TickerItem[];
 }

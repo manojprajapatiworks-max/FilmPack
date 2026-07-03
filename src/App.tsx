@@ -5,7 +5,7 @@ import ApplicantDashboard from "./components/ApplicantDashboard";
 import RecruiterDashboard from "./components/RecruiterDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import PackagingFilmShowcase from "./components/PackagingFilmShowcase";
-import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, Globe, MapPin } from "lucide-react";
+import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, MessageSquare, Globe, MapPin } from "lucide-react";
 
 const HD_ENTRANCE_IMAGES = [
   {
@@ -47,14 +47,16 @@ export default function App() {
         instagram: "https://instagram.com",
         facebook: "https://facebook.com",
         whatsapp: "https://whatsapp.com",
-        linkedin: "https://linkedin.com"
+        linkedin: "https://linkedin.com",
+        line: "https://line.me"
       }
     },
     socialLinks: {
       instagram: "https://instagram.com",
       facebook: "https://facebook.com",
       whatsapp: "https://whatsapp.com",
-      linkedin: "https://linkedin.com"
+      linkedin: "https://linkedin.com",
+      line: "https://line.me"
     }
   });
 
@@ -63,11 +65,13 @@ export default function App() {
       .then(r => r.json())
       .then(data => {
         if (data) {
-          const socialLinks = data.socialLinks || data.footer?.socialLinks || {
+          const socialLinks = {
             instagram: "https://instagram.com",
             facebook: "https://facebook.com",
             whatsapp: "https://whatsapp.com",
-            linkedin: "https://linkedin.com"
+            linkedin: "https://linkedin.com",
+            line: "https://line.me",
+            ...(data.socialLinks || data.footer?.socialLinks || {})
           };
           setSiteConfig({ ...data, socialLinks, footer: { ...data.footer, socialLinks } });
         }
@@ -235,13 +239,13 @@ export default function App() {
           <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
             <PackagingFilmShowcase />
             {currentUser.role === "applicant" && (
-              <ApplicantDashboard currentUser={currentUser} />
+              <ApplicantDashboard currentUser={currentUser} siteConfig={siteConfig} />
             )}
             {currentUser.role === "recruiter" && (
-              <RecruiterDashboard currentUser={currentUser} />
+              <RecruiterDashboard currentUser={currentUser} siteConfig={siteConfig} />
             )}
             {currentUser.role === "admin" && (
-              <AdminDashboard currentUser={currentUser} />
+              <AdminDashboard currentUser={currentUser} siteConfig={siteConfig} />
             )}
           </div>
         ) : (
@@ -631,6 +635,16 @@ export default function App() {
               >
                 <Linkedin className="h-4 w-4 text-cyan-400" />
                 <span>LinkedIn</span>
+              </a>
+              <a
+                href={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.line || "https://line.me"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-stone-800 hover:bg-green-600 text-stone-300 hover:text-white p-2.5 rounded-sm transition shadow-md cursor-pointer flex items-center gap-1.5 text-xs font-bold font-mono uppercase"
+                title="Jump directly to official LINE channel"
+              >
+                <MessageSquare className="h-4 w-4 text-green-400" />
+                <span>LINE</span>
               </a>
             </div>
           </div>

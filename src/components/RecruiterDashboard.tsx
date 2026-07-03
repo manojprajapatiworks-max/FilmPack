@@ -4,9 +4,10 @@ import { Plus, Edit, Trash2, Calendar, FileText, Download, Check, X, Search, Fil
 
 interface RecruiterDashboardProps {
   currentUser: User;
+  siteConfig?: any;
 }
 
-export default function RecruiterDashboard({ currentUser }: RecruiterDashboardProps) {
+export default function RecruiterDashboard({ currentUser, siteConfig }: RecruiterDashboardProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -53,7 +54,7 @@ export default function RecruiterDashboard({ currentUser }: RecruiterDashboardPr
     notes: ""
   });
 
-  const filmCategories = [
+  const filmCategories = siteConfig?.jobCategories || [
     "Extrusion Operator",
     "Printing Operator",
     "Lamination Operator",

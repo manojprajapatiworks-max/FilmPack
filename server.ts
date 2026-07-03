@@ -134,6 +134,20 @@ app.post("/api/auth/register", (req, res) => {
   });
 });
 
+// Update user profile defaults
+app.put("/api/users/:id/profile-defaults", (req, res) => {
+  const users = db.getUsers();
+  const idx = users.findIndex(u => u.id === req.params.id);
+  if (idx !== -1) {
+    users[idx].profileDefaults = req.body;
+    db.saveUsers(users);
+    const { passwordHash, ...safeUser } = users[idx];
+    res.json(safeUser);
+  } else {
+    res.status(404).json({ error: "User not found" });
+  }
+});
+
 // GET Jobs (With optional filter parameters)
 app.get("/api/jobs", (req, res) => {
   const jobs = db.getJobs();

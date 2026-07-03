@@ -5,9 +5,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 
 interface AdminDashboardProps {
   currentUser: User;
+  siteConfig?: SiteConfig | null;
 }
 
-export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
+export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfig }: AdminDashboardProps) {
   // Master lists
   const [users, setUsers] = useState<User[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -61,6 +62,14 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [newJobCat, setNewJobCat] = useState("");
+  const [selectedApplicantProfile, setSelectedApplicantProfile] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (propsSiteConfig) {
+      setSiteConfig(prev => ({ ...prev, ...propsSiteConfig }));
+    }
+  }, [propsSiteConfig]);
 
   // Active view
   const [activeSection, setActiveSection] = useState<"stats" | "pending_approvals" | "user_management" | "job_management" | "site_config">("stats");
@@ -116,12 +125,18 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
       }
       if (configRes.ok) {
         const data = await configRes.json();
-        const socialLinks = data?.socialLinks || data?.footer?.socialLinks || {
+        const socialLinks = {
           instagram: "https://instagram.com",
           facebook: "https://facebook.com",
           whatsapp: "https://whatsapp.com",
-          linkedin: "https://linkedin.com"
+          linkedin: "https://linkedin.com",
+          line: "https://line.me",
+          ...(data?.socialLinks || data?.footer?.socialLinks || {})
         };
+        const jobCategories = data?.jobCategories?.length ? data.jobCategories : [
+          "Extrusion Operator", "Printing Operator", "Lamination Operator", "Slitting Operator",
+          "QC Engineer", "Production Manager", "Maintenance Engineer", "Sales & Marketing", "R&D", "Warehouse"
+        ];
         const showcaseImages = (data?.showcaseImages || []).map((img: any) => ({
           ...img,
           specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
@@ -129,6 +144,7 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
         setSiteConfig({
           ...data,
           socialLinks,
+          jobCategories,
           showcaseImages,
           footer: {
             ...data?.footer,
@@ -411,6 +427,72 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const exportApplicantsCSV = () => {
+    const applicantUsers = users.filter(u => u.role === "applicant");
+    const headers = [
+      "User ID", "Full Name", "Email", "Mobile", "Account Status",
+      "Qualification", "Experience", "Current Company", "Current Designation",
+      "Current Salary", "Expected Salary", "Notice Period", "Current Location",
+      "Preferred Location", "Skills", "Registered Date"
+    ];
+    const rows = applicantUsers.map(u => {
+      const pd = u.profileDefaults || {};
+      return [
+        u.id,
+        `"${(u.name || "").replace(/"/g, '""')}"`,
+        `"${(u.email || "").replace(/"/g, '""')}"`,
+        `"${(u.mobile || "").replace(/"/g, '""')}"`,
+        u.status,
+        `"${(pd.qualification || "").replace(/"/g, '""')}"`,
+        `"${(pd.experience || "").replace(/"/g, '""')}"`,
+        `"${(pd.currentCompany || "").replace(/"/g, '""')}"`,
+        `"${(pd.currentDesignation || "").replace(/"/g, '""')}"`,
+        `"${(pd.currentSalary || "").replace(/"/g, '""')}"`,
+        `"${(pd.expectedSalary || "").replace(/"/g, '""')}"`,
+        `"${(pd.noticePeriod || "").replace(/"/g, '""')}"`,
+        `"${(pd.currentLocation || "").replace(/"/g, '""')}"`,
+        `"${(pd.preferredLocation || "").replace(/"/g, '""')}"`,
+        `"${(Array.isArray(pd.skills) ? pd.skills.join("; ") : (pd.skills || "")).replace(/"/g, '""')}"`,
+        u.createdDate
+      ];
+    }).map(row => row.join(","));
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `FilmPack_Applicants_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleAddJobCat = () => {
+    if (!newJobCat.trim()) return;
+    const currentCats = siteConfig.jobCategories || [
+      "Extrusion Operator", "Printing Operator", "Lamination Operator", "Slitting Operator",
+      "QC Engineer", "Production Manager", "Maintenance Engineer", "Sales & Marketing", "R&D", "Warehouse"
+    ];
+    if (!currentCats.includes(newJobCat.trim())) {
+      setSiteConfig({
+        ...siteConfig,
+        jobCategories: [...currentCats, newJobCat.trim()]
+      });
+      setNewJobCat("");
+    }
+  };
+
+  const handleRemoveJobCat = (catToRemove: string) => {
+    const currentCats = siteConfig.jobCategories || [
+      "Extrusion Operator", "Printing Operator", "Lamination Operator", "Slitting Operator",
+      "QC Engineer", "Production Manager", "Maintenance Engineer", "Sales & Marketing", "R&D", "Warehouse"
+    ];
+    setSiteConfig({
+      ...siteConfig,
+      jobCategories: currentCats.filter(c => c !== catToRemove)
+    });
   };
 
   // Filter lists
@@ -791,13 +873,22 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                 <p className="text-xs text-stone-500 font-serif italic mt-1">Audit credentials, update contact records, disable accounts, and reset passwords.</p>
               </div>
 
-              <button
-                onClick={() => setIsCreateRecruiterOpen(true)}
-                className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-6 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-                Register Recruiter
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={exportApplicantsCSV}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-5 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Applicants (CSV)
+                </button>
+                <button
+                  onClick={() => setIsCreateRecruiterOpen(true)}
+                  className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-6 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                  Register Recruiter
+                </button>
+              </div>
             </div>
 
             {/* Filter tools */}
@@ -854,6 +945,16 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                           {u.companyDetails && (
                             <p className="text-[10px] text-stone-900 font-bold font-serif mt-1">{u.companyDetails.companyName}</p>
                           )}
+                          {u.role === "applicant" && u.profileDefaults && (
+                            <div className="mt-1.5 text-[10px] bg-stone-100 p-1.5 rounded border border-stone-200">
+                              <p className="font-semibold text-stone-800">
+                                {u.profileDefaults.qualification || "No qualification set"} • {u.profileDefaults.experience || "0 Yrs Exp"}
+                              </p>
+                              {u.profileDefaults.currentCompany && (
+                                <p className="text-stone-600 italic">At: {u.profileDefaults.currentCompany} ({u.profileDefaults.currentDesignation || "N/A"})</p>
+                              )}
+                            </div>
+                          )}
                         </td>
                         <td className="p-4 uppercase font-mono font-bold text-[9px] tracking-wider">
                           {u.role === "recruiter" ? (
@@ -882,6 +983,16 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                         </td>
                         <td className="p-4">
                           <div className="flex justify-center items-center gap-1.5 flex-wrap">
+                            {u.role === "applicant" && (
+                              <button
+                                onClick={() => setSelectedApplicantProfile(u)}
+                                className="bg-blue-50 hover:bg-blue-100 text-blue-900 p-1 px-2 border border-blue-300 rounded-sm cursor-pointer transition font-mono font-bold text-[9px] uppercase tracking-wider flex items-center gap-1"
+                                title="View Saved Resume Defaults"
+                              >
+                                <Eye className="h-3 w-3 text-blue-700" />
+                                Profile
+                              </button>
+                            )}
                             <button
                               onClick={() => openEditUserModal(u)}
                               className="bg-stone-100 hover:bg-stone-200 text-stone-850 p-1.5 border border-stone-300 rounded-sm cursor-pointer transition"
@@ -1286,16 +1397,83 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                     className="w-full bg-stone-50 border border-stone-300 rounded-sm p-2 text-xs font-mono text-stone-800 focus:outline-none focus:ring-1 focus:ring-cyan-600"
                   />
                 </div>
+                <div>
+                  <label className="block text-[10px] font-mono font-bold text-green-700 uppercase mb-1 flex items-center gap-1">LINE Official Channel URL</label>
+                  <input
+                    type="text"
+                    value={(siteConfig?.socialLinks || siteConfig?.footer?.socialLinks)?.line || ""}
+                    onChange={(e) => {
+                      const updated = {
+                        ...((siteConfig?.socialLinks || siteConfig?.footer?.socialLinks) || { instagram: "", facebook: "", whatsapp: "", linkedin: "", line: "" }),
+                        line: e.target.value
+                      };
+                      setSiteConfig({
+                        ...siteConfig,
+                        socialLinks: updated,
+                        footer: { ...siteConfig.footer, socialLinks: updated }
+                      });
+                    }}
+                    className="w-full bg-stone-50 border border-stone-300 rounded-sm p-2 text-xs font-mono text-stone-800 focus:outline-none focus:ring-1 focus:ring-green-600"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* SECTION 3: LIVE CONTINUOUS PLANT PRODUCTION TICKER */}
+            {/* SECTION 3: FILM ROLES & JOB CATEGORIES MANAGEMENT */}
+            <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-xs space-y-4">
+              <div className="border-b border-stone-100 pb-3">
+                <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-amber-600" />
+                  3. Film Roles & Job Categories Management
+                </h3>
+                <p className="text-xs text-stone-500 font-serif italic mt-0.5">Customize the film packaging job categories and roles available across applicant filters and recruiter job posting forms.</p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter new role / category (e.g. Blown Film Specialist)..."
+                    value={newJobCat}
+                    onChange={(e) => setNewJobCat(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddJobCat(); } }}
+                    className="flex-1 bg-stone-50 border border-stone-300 rounded-sm p-2 text-xs font-mono text-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddJobCat}
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-mono uppercase tracking-widest text-xs px-4 py-2 rounded-sm font-bold cursor-pointer transition shrink-0"
+                  >
+                    + Add Category
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {(siteConfig.jobCategories || [
+                    "Extrusion Operator", "Printing Operator", "Lamination Operator", "Slitting Operator",
+                    "QC Engineer", "Production Manager", "Maintenance Engineer", "Sales & Marketing", "R&D", "Warehouse"
+                  ]).map((cat, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 bg-stone-100 border border-stone-300 text-stone-900 px-3 py-1.5 rounded-sm font-mono text-xs shadow-2xs">
+                      <span>{cat}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveJobCat(cat)}
+                        className="text-stone-400 hover:text-red-600 font-bold ml-1 cursor-pointer"
+                        title="Remove Category"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 4: LIVE CONTINUOUS PLANT PRODUCTION TICKER */}
             <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-xs space-y-4">
               <div className="border-b border-stone-100 pb-3 flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
                     <Activity className="h-4 w-4 text-emerald-600" />
-                    3. Editable Live Continuous Plant Production Ticker
+                    4. Editable Live Continuous Plant Production Ticker
                   </h3>
                   <p className="text-xs text-stone-500 font-serif italic mt-0.5">Configure live production stats and operational bulletins streaming across the homepage ticker.</p>
                 </div>
@@ -1717,6 +1895,93 @@ export default function AdminDashboard({ currentUser }: AdminDashboardProps) {
                 <button type="submit" className="bg-stone-900 text-white font-bold px-5 py-1.5 rounded-sm font-mono uppercase tracking-widest text-[10px] cursor-pointer">Update Password</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* APPLICANT PROFILE DETAIL MODAL */}
+      {selectedApplicantProfile && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-stone-300 rounded-sm shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto font-serif">
+            <div className="flex justify-between items-start border-b border-stone-200 pb-3 mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-stone-900 font-serif">{selectedApplicantProfile.name} - Profile Details</h3>
+                <p className="text-xs text-stone-500 font-mono mt-0.5">{selectedApplicantProfile.email} • {selectedApplicantProfile.mobile}</p>
+              </div>
+              <button
+                onClick={() => setSelectedApplicantProfile(null)}
+                className="text-stone-400 hover:text-stone-700 font-mono text-xs p-1 cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {selectedApplicantProfile.profileDefaults ? (
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-stone-50 p-4 border border-stone-200 rounded">
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Qualification & Education</p>
+                    <p className="font-bold text-stone-900 text-sm mt-0.5">{selectedApplicantProfile.profileDefaults.qualification || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Total Experience</p>
+                    <p className="font-bold text-stone-900 text-sm mt-0.5">{selectedApplicantProfile.profileDefaults.experience || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Current Company</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.currentCompany || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Current Designation</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.currentDesignation || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Current Salary</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.currentSalary || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Expected Salary</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.expectedSalary || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Notice Period</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.noticePeriod || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-stone-500">Locations (Current / Preferred)</p>
+                    <p className="text-stone-800 mt-0.5">{selectedApplicantProfile.profileDefaults.currentLocation || "N/A"} → {selectedApplicantProfile.profileDefaults.preferredLocation || "Any"}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-mono font-bold uppercase text-stone-500 mb-2">Skills & Competencies</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(selectedApplicantProfile.profileDefaults.skills && selectedApplicantProfile.profileDefaults.skills.length > 0) ? (
+                      selectedApplicantProfile.profileDefaults.skills.map((s: string, idx: number) => (
+                        <span key={idx} className="bg-stone-900 text-white font-mono text-[10px] px-2 py-0.5 rounded uppercase">
+                          {s}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-stone-500 italic">No skill tags added.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-stone-500 italic">
+                This applicant has not completed their Resume Profile Defaults yet.
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setSelectedApplicantProfile(null)}
+                className="bg-stone-900 hover:bg-stone-800 text-white font-mono uppercase tracking-widest text-xs px-6 py-2 rounded transition cursor-pointer font-bold"
+              >
+                Close Profile
+              </button>
+            </div>
           </div>
         </div>
       )}
