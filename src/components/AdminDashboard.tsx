@@ -160,7 +160,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
         });
       }
     } catch (err) {
-      console.error("Failed to load admin logs", err);
+      console.warn("Notice: admin logs momentarily unavailable", err);
     } finally {
       setIsLoading(false);
     }

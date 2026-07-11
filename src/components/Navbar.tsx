@@ -27,7 +27,7 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
         }
       }
     } catch (err) {
-      console.error("Failed to fetch notifications", err);
+      console.warn("Background polling notice: notifications momentarily unavailable", err);
     }
   };
 
@@ -39,7 +39,7 @@ export default function Navbar({ currentUser, onLogout, activeTab, setActiveTab 
         setSiteConfig(data);
       }
     } catch (err) {
-      console.error("Failed to fetch site config", err);
+      console.warn("Background polling notice: site config momentarily unavailable", err);
     }
   };
 

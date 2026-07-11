@@ -82,7 +82,7 @@ export default function RecruiterDashboard({ currentUser, siteConfig }: Recruite
         setInterviews(await intRes.json());
       }
     } catch (err) {
-      console.error("Failed to fetch recruiter records", err);
+      console.warn("Notice: recruiter data fetch momentarily unavailable", err);
     } finally {
       setIsLoading(false);
     }

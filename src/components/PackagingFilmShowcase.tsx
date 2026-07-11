@@ -92,7 +92,7 @@ export default function PackagingFilmShowcase({ compact = false }: PackagingFilm
           }
         }
       } catch (err) {
-        console.error("Failed to load showcase config", err);
+        console.warn("Notice: showcase config momentarily unavailable", err);
       }
     };
     loadConfig();

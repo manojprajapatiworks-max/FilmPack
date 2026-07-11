@@ -76,7 +76,7 @@ export default function App() {
           setSiteConfig({ ...data, socialLinks, footer: { ...data.footer, socialLinks } });
         }
       })
-      .catch(e => console.error("Error loading site config in App", e));
+      .catch(e => console.warn("Notice: site config load momentarily unavailable in App", e));
   }, []);
 
   useEffect(() => {

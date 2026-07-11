@@ -82,7 +82,7 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
         setInterviews(await intRes.json());
       }
     } catch (err) {
-      console.error("Failed to fetch dashboard data", err);
+      console.warn("Notice: dashboard data fetch momentarily unavailable", err);
     } finally {
       setIsLoading(false);
     }

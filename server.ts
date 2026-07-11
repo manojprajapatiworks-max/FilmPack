@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { db, User, Job, Application, Notification, Interview } from "./server/db";
 import { GoogleGenAI, Type } from "@google/genai";
+import crypto from "crypto";
 
 const app = express();
 const PORT = 3000;
@@ -34,6 +35,72 @@ if (process.env.GEMINI_API_KEY) {
 }
 
 // ==========================================
+// SECURITY UTILITIES & MITIGATION ENGINE
+// ==========================================
+
+// Cryptographically secure hashing helper for passwords
+const hashPassword = (password: string): string => {
+  return crypto.createHash("sha256").update(password + "_filmpack_secret_salt_2026").digest("hex");
+};
+
+// Global authentication & IDOR session verification middleware
+const authenticateUser = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const userId = req.headers["x-user-id"] as string;
+  const userRole = req.headers["x-user-role"] as string;
+
+  // Paths that are fully public (no auth header needed)
+  const isPublicRoute = 
+    req.path === "/api/auth/login" || 
+    req.path === "/api/auth/register" || 
+    req.path === "/api/site-config" ||
+    (req.method === "GET" && req.path === "/api/jobs") ||
+    (req.method === "GET" && req.path.startsWith("/api/jobs/"));
+
+  if (isPublicRoute) {
+    return next();
+  }
+
+  if (!userId || !userRole) {
+    return res.status(401).json({ error: "Authentication required. Please log in to continue." });
+  }
+
+  const users = db.getUsers();
+  const user = users.find(u => u.id === userId);
+
+  if (!user) {
+    return res.status(401).json({ error: "Invalid session user. Please log in again." });
+  }
+
+  if (user.status !== "approved" && user.role !== "admin") {
+    return res.status(403).json({ error: `Access Denied. Your account status is: ${user.status}.` });
+  }
+
+  // Inject authenticated user session context into req
+  (req as any).currentUser = user;
+  next();
+};
+
+// Apply security session middleware to all /api/ requests
+app.use("/api", authenticateUser);
+
+// Role Enforcement Middlewares
+const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const user = (req as any).currentUser as User;
+  if (!user || user.role !== "admin") {
+    return res.status(403).json({ error: "Access Denied. Administrator role required for this action." });
+  }
+  next();
+};
+
+const requireRecruiterOrAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const user = (req as any).currentUser as User;
+  if (!user || (user.role !== "recruiter" && user.role !== "admin")) {
+    return res.status(403).json({ error: "Access Denied. Recruiter or Administrator privilege is required." });
+  }
+  next();
+};
+
+// ==========================================
 // API ROUTES
 // ==========================================
 
@@ -47,8 +114,22 @@ app.post("/api/auth/login", (req, res) => {
   const users = db.getUsers();
   const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
 
-  if (!user || user.passwordHash !== password) {
+  if (!user) {
     return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  // Support both cryptographic hashes and legacy plaintext fallback with auto-migration
+  const isPlainMatch = user.passwordHash === password;
+  const isHashMatch = user.passwordHash === hashPassword(password);
+
+  if (!isPlainMatch && !isHashMatch) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  // Securely upgrade legacy plaintext password to secure cryptographic hash on successful login
+  if (isPlainMatch && !isHashMatch) {
+    user.passwordHash = hashPassword(password);
+    db.saveUsers(users);
   }
 
   if (user.status === "pending_approval") {
@@ -104,7 +185,7 @@ app.post("/api/auth/register", (req, res) => {
     name,
     email: email.trim(),
     mobile,
-    passwordHash: password, // simple storage
+    passwordHash: hashPassword(password), // Store hashed password securely
     role: role as 'applicant' | 'recruiter',
     status: isRecruiter ? "pending_approval" : "approved", // Recruiters need approval
     createdDate: new Date().toISOString()
@@ -134,8 +215,15 @@ app.post("/api/auth/register", (req, res) => {
   });
 });
 
-// Update user profile defaults
+// Update user profile defaults (with IDOR check)
 app.put("/api/users/:id/profile-defaults", (req, res) => {
+  const currentUser = (req as any).currentUser as User;
+  
+  // Security Enforcement: Prevent users from editing other users' profile defaults
+  if (!currentUser || (currentUser.role !== "admin" && currentUser.id !== req.params.id)) {
+    return res.status(403).json({ error: "Access Denied. You are not authorized to update this profile." });
+  }
+
   const users = db.getUsers();
   const idx = users.findIndex(u => u.id === req.params.id);
   if (idx !== -1) {
@@ -196,11 +284,17 @@ app.get("/api/jobs/:id", (req, res) => {
 });
 
 // POST Create Job
-app.post("/api/jobs", (req, res) => {
+app.post("/api/jobs", requireRecruiterOrAdmin, (req, res) => {
   const { title, companyName, location, department, experience, education, salary, description, vacancies, deadline, skillsRequired, recruiterId } = req.body;
 
   if (!title || !companyName || !location || !department || !deadline || !recruiterId) {
     return res.status(400).json({ error: "Title, Company, Location, Category, and Deadline are required fields." });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+  // Security check: Prevent a recruiter from posting jobs as another recruiter
+  if (currentUser.role === "recruiter" && recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot post jobs for another recruiter account." });
   }
 
   const jobs = db.getJobs();
@@ -232,11 +326,17 @@ app.post("/api/jobs", (req, res) => {
 });
 
 // PUT Edit Job
-app.put("/api/jobs/:id", (req, res) => {
+app.put("/api/jobs/:id", requireRecruiterOrAdmin, (req, res) => {
   const jobs = db.getJobs();
   const index = jobs.findIndex(j => j.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Job not found" });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+  // Security check: Recruiters can only edit their own jobs
+  if (currentUser.role === "recruiter" && jobs[index].recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot modify another recruiter's job post." });
   }
 
   const updatedJob = {
@@ -254,52 +354,93 @@ app.put("/api/jobs/:id", (req, res) => {
 });
 
 // DELETE Job
-app.delete("/api/jobs/:id", (req, res) => {
+app.delete("/api/jobs/:id", requireRecruiterOrAdmin, (req, res) => {
   const jobs = db.getJobs();
+  const index = jobs.findIndex(j => j.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Job not found" });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+  // Security check: Recruiters can only delete their own jobs
+  if (currentUser.role === "recruiter" && jobs[index].recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot delete another recruiter's job post." });
+  }
+
   const filtered = jobs.filter(j => j.id !== req.params.id);
   db.saveJobs(filtered);
   res.json({ message: "Job deleted successfully" });
 });
 
 // POST Manual Move to Closed
-app.post("/api/jobs/:id/close", (req, res) => {
+app.post("/api/jobs/:id/close", requireRecruiterOrAdmin, (req, res) => {
   const jobs = db.getJobs();
   const job = jobs.find(j => j.id === req.params.id);
   if (!job) {
     return res.status(404).json({ error: "Job not found" });
   }
+
+  const currentUser = (req as any).currentUser as User;
+  // Security check: Recruiters can only close their own jobs
+  if (currentUser.role === "recruiter" && job.recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot close another recruiter's job post." });
+  }
+
   job.status = "closed";
   db.saveJobs(jobs);
   res.json(job);
 });
 
-// GET Applications
+// GET Applications (Secured with role-based ownership constraints)
 app.get("/api/applications", (req, res) => {
+  const currentUser = (req as any).currentUser as User;
   const apps = db.getApplications();
   const { applicantId, recruiterId, jobId } = req.query;
 
   let filteredApps = [...apps];
 
-  if (applicantId) {
-    filteredApps = filteredApps.filter(a => a.applicantId === applicantId);
-  }
-
-  if (jobId) {
-    filteredApps = filteredApps.filter(a => a.jobId === jobId);
-  }
-
-  if (recruiterId) {
-    // Need to cross reference with jobs to filter by recruiter
+  // Enforce access boundary constraints
+  if (currentUser.role === "applicant") {
+    // Applicants can ONLY fetch their own applications
+    filteredApps = filteredApps.filter(a => a.applicantId === currentUser.id);
+  } else if (currentUser.role === "recruiter") {
+    // Recruiters can ONLY fetch applications for their own jobs
     const jobs = db.getJobs();
-    const recruiterJobIds = new Set(jobs.filter(j => j.recruiterId === recruiterId).map(j => j.id));
+    const recruiterJobIds = new Set(jobs.filter(j => j.recruiterId === currentUser.id).map(j => j.id));
     filteredApps = filteredApps.filter(a => recruiterJobIds.has(a.jobId));
+
+    if (jobId) {
+      filteredApps = filteredApps.filter(a => a.jobId === jobId);
+    }
+  } else if (currentUser.role === "admin") {
+    // Admins can filter freely
+    if (applicantId) {
+      filteredApps = filteredApps.filter(a => a.applicantId === applicantId);
+    }
+    if (jobId) {
+      filteredApps = filteredApps.filter(a => a.jobId === jobId);
+    }
+    if (recruiterId) {
+      const jobs = db.getJobs();
+      const recruiterJobIds = new Set(jobs.filter(j => j.recruiterId === recruiterId).map(j => j.id));
+      filteredApps = filteredApps.filter(a => recruiterJobIds.has(a.jobId));
+    }
   }
 
   res.json(filteredApps);
 });
 
-// POST Submit Application & trigger simulated notification + optional Gemini analysis
-app.post("/api/applications", async (req, res) => {
+// POST Submit Application & trigger simulated notification + optional Gemini analysis (Secured)
+app.post("/api/applications", (req, res, next) => {
+  const { applicantId } = req.body;
+  const currentUser = (req as any).currentUser as User;
+
+  // Security check: Applicants can only apply on behalf of themselves
+  if (currentUser.role === "applicant" && applicantId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot submit applications on behalf of another user." });
+  }
+  next();
+}, async (req, res) => {
   const { jobId, applicantId, remarks, formData, resumeUrl, photoUrl } = req.body;
 
   if (!jobId || !applicantId || !formData) {
@@ -439,8 +580,8 @@ app.post("/api/applications", async (req, res) => {
   res.status(201).json(newApp);
 });
 
-// PUT Update Application Status (Trigger notifications)
-app.put("/api/applications/:id/status", (req, res) => {
+// PUT Update Application Status (Trigger notifications - Secured)
+app.put("/api/applications/:id/status", requireRecruiterOrAdmin, (req, res) => {
   const { status, feedback } = req.body;
   if (!status) {
     return res.status(400).json({ error: "Status is required." });
@@ -452,7 +593,16 @@ app.put("/api/applications/:id/status", (req, res) => {
     return res.status(404).json({ error: "Application not found." });
   }
 
+  const currentUser = (req as any).currentUser as User;
   const application = apps[appIndex];
+  
+  // Security Check: Recruiters can only update applications for their own jobs
+  const jobs = db.getJobs();
+  const targetJob = jobs.find(j => j.id === application.jobId);
+  if (currentUser.role === "recruiter" && (!targetJob || targetJob.recruiterId !== currentUser.id)) {
+    return res.status(403).json({ error: "Access Denied. You are not authorized to moderate applications for another recruiter's jobs." });
+  }
+
   application.status = status;
   if (feedback !== undefined) {
     application.feedback = feedback;
@@ -461,8 +611,6 @@ app.put("/api/applications/:id/status", (req, res) => {
   db.saveApplications(apps);
 
   // Send WhatsApp/Email Notifications
-  const jobs = db.getJobs();
-  const targetJob = jobs.find(j => j.id === application.jobId);
   const applicantUser = db.getUsers().find(u => u.id === application.applicantId);
 
   if (targetJob && applicantUser) {
@@ -493,13 +641,23 @@ app.put("/api/applications/:id/status", (req, res) => {
   res.json(application);
 });
 
-// PUT Update Feedback Only
-app.put("/api/applications/:id/feedback", (req, res) => {
+// PUT Update Feedback Only (Secured)
+app.put("/api/applications/:id/feedback", requireRecruiterOrAdmin, (req, res) => {
   const { feedback } = req.body;
   const apps = db.getApplications();
   const appIndex = apps.findIndex(a => a.id === req.params.id);
   if (appIndex === -1) {
     return res.status(404).json({ error: "Application not found." });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+  const application = apps[appIndex];
+  
+  // Security Check: Recruiters can only add feedback for applications of their own jobs
+  const jobs = db.getJobs();
+  const targetJob = jobs.find(j => j.id === application.jobId);
+  if (currentUser.role === "recruiter" && (!targetJob || targetJob.recruiterId !== currentUser.id)) {
+    return res.status(403).json({ error: "Access Denied. You are not authorized to moderate applications for another recruiter's jobs." });
   }
 
   apps[appIndex].feedback = feedback;
@@ -510,25 +668,44 @@ app.put("/api/applications/:id/feedback", (req, res) => {
 // ==========================================
 // INTERVIEWS ROUTES
 // ==========================================
+// GET Interviews (Secured against unauthorized multi-user leakage)
 app.get("/api/interviews", (req, res) => {
+  const currentUser = (req as any).currentUser as User;
   const interviews = db.getInterviews();
-  const { applicantId, recruiterId } = req.query;
 
   let filtered = [...interviews];
-  if (applicantId) {
-    filtered = filtered.filter(i => i.applicantId === applicantId);
+
+  if (currentUser.role === "applicant") {
+    // Applicants can ONLY view their own scheduled interviews
+    filtered = filtered.filter(i => i.applicantId === currentUser.id);
+  } else if (currentUser.role === "recruiter") {
+    // Recruiters can ONLY view interviews scheduled by/for themselves
+    filtered = filtered.filter(i => i.recruiterId === currentUser.id);
   }
-  if (recruiterId) {
-    filtered = filtered.filter(i => i.recruiterId === recruiterId);
-  }
+
   res.json(filtered);
 });
 
-app.post("/api/interviews", (req, res) => {
+// POST Schedule Interview (Secured with Recruiter Ownership)
+app.post("/api/interviews", requireRecruiterOrAdmin, (req, res) => {
   const { applicationId, applicantId, recruiterId, jobId, title, dateTime, mode, linkOrLocation, notes } = req.body;
 
   if (!applicationId || !applicantId || !recruiterId || !jobId || !title || !dateTime || !mode) {
     return res.status(400).json({ error: "Required interview scheduling details are missing." });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+
+  // Security Check: Ensure recruiter is only scheduling for themselves
+  if (currentUser.role === "recruiter" && recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot schedule interviews on behalf of another recruiter." });
+  }
+
+  // Security Check: Verify job belongs to this recruiter
+  const jobs = db.getJobs();
+  const job = jobs.find(j => j.id === jobId);
+  if (currentUser.role === "recruiter" && (!job || job.recruiterId !== currentUser.id)) {
+    return res.status(403).json({ error: "Access Denied. You cannot schedule interviews for another recruiter's jobs." });
   }
 
   const interviews = db.getInterviews();
@@ -551,8 +728,6 @@ app.post("/api/interviews", (req, res) => {
 
   // Notify candidate
   const applicantUser = db.getUsers().find(u => u.id === applicantId);
-  const jobs = db.getJobs();
-  const job = jobs.find(j => j.id === jobId);
 
   if (applicantUser && job) {
     const nots = db.getNotifications();
@@ -583,12 +758,19 @@ app.post("/api/interviews", (req, res) => {
   res.status(201).json(newInterview);
 });
 
-// Update Interview Status (e.g. Cancel or Complete)
-app.put("/api/interviews/:id", (req, res) => {
+// Update Interview Status (Secured with Recruiter Ownership)
+app.put("/api/interviews/:id", requireRecruiterOrAdmin, (req, res) => {
   const interviews = db.getInterviews();
   const idx = interviews.findIndex(i => i.id === req.params.id);
   if (idx === -1) {
     return res.status(404).json({ error: "Interview not found" });
+  }
+
+  const currentUser = (req as any).currentUser as User;
+  
+  // Security Check: Recruiters can only modify status for interviews they scheduled
+  if (currentUser.role === "recruiter" && interviews[idx].recruiterId !== currentUser.id) {
+    return res.status(403).json({ error: "Access Denied. You cannot modify an interview scheduled by another recruiter." });
   }
 
   interviews[idx] = {
@@ -604,6 +786,9 @@ app.put("/api/interviews/:id", (req, res) => {
 // ==========================================
 // ADMIN WORKFLOWS & USER MANAGEMENT
 // ==========================================
+
+// Global protection middleware for all /api/admin/* endpoints
+app.use("/api/admin", requireAdmin);
 
 // GET Admin Users List
 app.get("/api/admin/users", (req, res) => {
@@ -697,7 +882,7 @@ app.post("/api/admin/users/:id/reset-password", (req, res) => {
     return res.status(404).json({ error: "User not found." });
   }
 
-  users[idx].passwordHash = newPassword;
+  users[idx].passwordHash = hashPassword(newPassword); // Cryptographically secure hash reset
   db.saveUsers(users);
   res.json({ message: "Password updated successfully" });
 });
@@ -754,18 +939,29 @@ app.post("/api/admin/users/approve-multiple", (req, res) => {
 // ==========================================
 
 // Export job applications as Excel-friendly CSV
-app.get("/api/export/excel", (req, res) => {
+app.get("/api/export/excel", requireRecruiterOrAdmin, (req, res) => {
+  const currentUser = (req as any).currentUser as User;
   const { jobId, recruiterId } = req.query;
   const apps = db.getApplications();
   const jobs = db.getJobs();
-  const users = db.getUsers();
 
   let filtered = [...apps];
-  if (jobId) {
-    filtered = filtered.filter(a => a.jobId === jobId);
-  } else if (recruiterId) {
-    const recJobs = new Set(jobs.filter(j => j.recruiterId === recruiterId).map(j => j.id));
+
+  // Recruiter role validation constraint
+  if (currentUser.role === "recruiter") {
+    const recJobs = new Set(jobs.filter(j => j.recruiterId === currentUser.id).map(j => j.id));
     filtered = filtered.filter(a => recJobs.has(a.jobId));
+    if (jobId) {
+      filtered = filtered.filter(a => a.jobId === jobId);
+    }
+  } else {
+    // Admin role filters
+    if (jobId) {
+      filtered = filtered.filter(a => a.jobId === jobId);
+    } else if (recruiterId) {
+      const recJobs = new Set(jobs.filter(j => j.recruiterId === recruiterId).map(j => j.id));
+      filtered = filtered.filter(a => recJobs.has(a.jobId));
+    }
   }
 
   // Create CSV String
@@ -785,7 +981,7 @@ app.get("/api/export/excel", (req, res) => {
 });
 
 // Download resume database as CSV
-app.get("/api/export/candidates", (req, res) => {
+app.get("/api/export/candidates", requireAdmin, (req, res) => {
   const users = db.getUsers();
   const apps = db.getApplications();
 
@@ -817,19 +1013,27 @@ app.get("/api/export/candidates", (req, res) => {
 
 // GET Notification Log
 app.get("/api/notifications", (req, res) => {
+  const currentUser = (req as any).currentUser as User;
   const nots = db.getNotifications();
-  const { userId, role } = req.query;
+  const { userId } = req.query;
+
   let filtered = [...nots];
-  if (role !== "admin" && userId) {
-    filtered = filtered.filter(n => n.userId === userId || n.recipient === userId || n.recipient.includes(userId as string));
+  if (currentUser.role !== "admin") {
+    // Regular users can ONLY fetch notifications directed to them
+    const email = currentUser.email || "";
+    const mobile = currentUser.mobile || "";
+    filtered = filtered.filter(n => n.userId === currentUser.id || n.recipient === currentUser.id || n.recipient === email || n.recipient === mobile);
+  } else if (userId) {
+    filtered = filtered.filter(n => n.userId === userId || n.recipient === userId || (typeof n.recipient === "string" && n.recipient.includes(userId as string)));
   }
+
   // Sort descending by date
   filtered.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
   res.json(filtered);
 });
 
 // POST Trigger Simulated Test Alert
-app.post("/api/notifications/test", (req, res) => {
+app.post("/api/notifications/test", requireAdmin, (req, res) => {
   const { userId, recipient, message, type } = req.body;
   const nots = db.getNotifications();
   const newNotif: Notification = {
@@ -847,22 +1051,33 @@ app.post("/api/notifications/test", (req, res) => {
 
 // DELETE Clear All Notifications (or for a user)
 app.delete("/api/notifications", (req, res) => {
-  const { userId, role } = req.query;
-  if (role === "admin") {
-    // Admin clears the entire system log
-    db.saveNotifications([]);
-  } else if (userId) {
-    const users = db.getUsers();
-    const currentUser = users.find(u => u.id === userId);
-    const email = currentUser?.email || "";
-    const mobile = currentUser?.mobile || "";
+  const currentUser = (req as any).currentUser as User;
+  const { userId } = req.query;
+
+  if (currentUser.role === "admin") {
+    if (userId) {
+      // Admin clears a specific user's logs
+      const u = db.getUsers().find(user => user.id === userId);
+      const email = u?.email || "";
+      const mobile = u?.mobile || "";
+      const nots = db.getNotifications().filter(n => {
+        const isMatch = n.userId === userId || n.recipient === userId || (email && n.recipient === email) || (mobile && n.recipient === mobile);
+        return !isMatch;
+      });
+      db.saveNotifications(nots);
+    } else {
+      // Admin clears everything
+      db.saveNotifications([]);
+    }
+  } else {
+    // Regular users can only clear their own logs
+    const email = currentUser.email || "";
+    const mobile = currentUser.mobile || "";
     const nots = db.getNotifications().filter(n => {
-      const isMatch = n.userId === userId || n.recipient === userId || (email && n.recipient === email) || (mobile && n.recipient === mobile);
-      return !isMatch; // Keep notifications that DO NOT belong to this user
+      const isMatch = n.userId === currentUser.id || n.recipient === currentUser.id || (email && n.recipient === email) || (mobile && n.recipient === mobile);
+      return !isMatch;
     });
     db.saveNotifications(nots);
-  } else {
-    db.saveNotifications([]);
   }
   res.json({ success: true });
 });
