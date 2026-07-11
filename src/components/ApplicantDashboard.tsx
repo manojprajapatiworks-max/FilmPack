@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Job, Application, Interview } from "../types";
 import { Search, MapPin, Award, IndianRupee, Calendar, FileText, Camera, UploadCloud, CheckCircle, Info, RefreshCw, Layers, SlidersHorizontal, BookOpen, AlertCircle } from "lucide-react";
+import AllianceGazette from "./AllianceGazette";
 
 interface ApplicantDashboardProps {
   currentUser: User;
@@ -22,7 +23,7 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
   // UI Selection States
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [activeSection, setActiveSection] = useState<"find_jobs" | "my_applications" | "profile">("find_jobs");
+  const [activeSection, setActiveSection] = useState<"find_jobs" | "my_applications" | "profile" | "gazette">("find_jobs");
 
   // Profile default data
   const [profileData, setProfileData] = useState({
@@ -300,6 +301,14 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
               }`}
             >
               Resume Profile Defaults
+            </button>
+            <button
+              onClick={() => { setActiveSection("gazette"); setIsApplying(false); setSelectedJob(null); }}
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
+                activeSection === "gazette" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              }`}
+            >
+              Alliance Gazette 📰
             </button>
           </div>
         </div>
@@ -1178,6 +1187,13 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* GAZETTE NEWS FEED VIEW */}
+        {activeSection === "gazette" && (
+          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+            <AllianceGazette currentUser={currentUser} />
           </div>
         )}
       </main>

@@ -148,3 +148,18 @@ export interface SiteConfig {
   tickerItems: TickerItem[];
 }
 
+export interface NewsletterItem {
+  id: string;
+  title: string;
+  content: string;
+  summary: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  publishedDate?: string;
+  createdDate: string;
+  isAiGenerated: boolean;
+  topic?: string;
+}
+
+

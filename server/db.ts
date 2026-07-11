@@ -114,6 +114,20 @@ export interface TickerItem {
   color: string;
 }
 
+export interface NewsletterItem {
+  id: string;
+  title: string;
+  content: string;
+  summary: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  publishedDate?: string;
+  createdDate: string;
+  isAiGenerated: boolean;
+  topic?: string;
+}
+
 export interface SiteConfig {
   header: {
     platformName: string;
@@ -255,6 +269,7 @@ export interface DatabaseSchema {
   applications: Application[];
   notifications: Notification[];
   interviews: Interview[];
+  newsletters?: NewsletterItem[];
   siteConfig?: SiteConfig;
 }
 
@@ -482,6 +497,31 @@ const INITIAL_DB: DatabaseSchema = {
       notes: "Be prepared to answer questions on temperature gradients for BOPP, melt filter cleaning cycle, and air knife parameters.",
       status: "scheduled"
     }
+  ],
+  newsletters: [
+    {
+      id: "news_1",
+      title: "India's BOPP Industry Surges Ahead: Direct Monomaterial Scaling",
+      summary: "High-speed Bruckner lines in western India report record-breaking 480 m/min speeds as major packaging firms commit to 100% recyclable polyolefin alternatives.",
+      content: "### The Transition to Monomaterial Structures\n\nIndia's flexible packaging powerhouse is rapidly adapting to stringent environmental mandates. Major giants like **Uflex**, **Jindal Poly**, and **Cosmo First** are leading the charge. By transitioning multi-layer laminate structures (which historically combined incompatible PET and PE films) into single-family **PP-based (Polypropylene)** systems, the recycling ecosystem is getting a major boost.\n\n#### Key Milestones:\n- **Line speeds** on modern 8.7m and 10.4m wide stenter lines have consistently crossed **480 m/min**.\n- High-barrier co-extruded films now incorporate specialized gas-barrier layers (like EVOH) while maintaining a density below 0.92 g/cm³, allowing them to stay in the standard polypropylene recycling stream.\n\nThis shift is driving massive technical demand for qualified stenter operators and slitting coordinators across the Mumbai-Noida-Gujarat industrial corridor.",
+      imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
+      status: "approved",
+      publishedDate: "2026-07-10T08:00:00.000Z",
+      createdDate: "2026-07-10T08:00:00.000Z",
+      isAiGenerated: false,
+      topic: "Market Trends"
+    },
+    {
+      id: "news_2",
+      title: "AI Market Forecast: PET Film Feedstock Prices to Stabilize in Q3 2026",
+      summary: "AI-gathered intelligence indicates a stabilization in global paraxylene and PTA feedstock costs, bringing relief to BOPET film extruders and slitting operations across Asia.",
+      content: "### Feedstock Analytics & Pricing Models\n\nGlobal supply chain reports gathered via AI search grounding suggest a long-awaited cooling period for raw material prices in the packaging film space. Purified Terephthalic Acid (PTA) and Monoethylene Glycol (MEG), the core chemicals of Polyester (BOPET) film, are expected to stabilize after new petrochemical capacities come online in the Middle East and India.\n\n#### Projected Benefits for Plant Operations:\n1. **Improved Operating Margin**: Recruiter and plant managers can lock in mid-term supply contracts without extreme premium volatility.\n2. **Stabilized Production Schedules**: Steady material supply reduces emergency downtime on high-draw metallization machines.\n\n*Reviewer Note*: This post was automatically generated from current global logistics feeds and is awaiting moderator approval before showing up on the public user dashboard.",
+      imageUrl: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
+      status: "pending",
+      createdDate: "2026-07-11T01:30:00.000Z",
+      isAiGenerated: true,
+      topic: "Raw Materials"
+    }
   ]
 };
 
@@ -589,6 +629,21 @@ class Database {
 
   public saveInterviews(interviews: Interview[]) {
     this.data.interviews = interviews;
+    this.save();
+  }
+
+  // Newsletters CRUD
+  public getNewsletters(): NewsletterItem[] {
+    this.load();
+    if (!this.data.newsletters) {
+      this.data.newsletters = [];
+      this.save();
+    }
+    return this.data.newsletters;
+  }
+
+  public saveNewsletters(newsletters: NewsletterItem[]) {
+    this.data.newsletters = newsletters;
     this.save();
   }
 

@@ -5,7 +5,7 @@ import ApplicantDashboard from "./components/ApplicantDashboard";
 import RecruiterDashboard from "./components/RecruiterDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import PackagingFilmShowcase from "./components/PackagingFilmShowcase";
-import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, MessageSquare, Globe, MapPin } from "lucide-react";
+import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, MessageSquare, Globe, MapPin, Eye, EyeOff } from "lucide-react";
 
 const HD_ENTRANCE_IMAGES = [
   {
@@ -34,6 +34,8 @@ export default function App() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [authBgIndex, setAuthBgIndex] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   const [siteConfig, setSiteConfig] = useState<any>({
     footer: {
@@ -146,8 +148,8 @@ export default function App() {
 
       if (res.ok) {
         const user: User = await res.json();
-        setCurrentUser(user);
         localStorage.setItem("filmpack_user", JSON.stringify(user));
+        setCurrentUser(user);
         setAuthSuccess("Logged in successfully!");
       } else {
         const errData = await res.json();
@@ -194,8 +196,8 @@ export default function App() {
           });
           if (loginRes.ok) {
             const user: User = await loginRes.json();
-            setCurrentUser(user);
             localStorage.setItem("filmpack_user", JSON.stringify(user));
+            setCurrentUser(user);
             return;
           }
         }
@@ -385,14 +387,59 @@ export default function App() {
                       <div className="relative">
                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           required
                           placeholder="Security Password"
                           value={loginForm.password}
                           onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full bg-white border border-stone-300 rounded-sm pl-9 pr-10 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-2 text-stone-400 hover:text-stone-700 cursor-pointer flex items-center h-full"
+                          title={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                       </div>
+                    </div>
+
+                    {/* Quick Access Testing Credentials */}
+                    <div className="bg-[#FCFAF6] border border-dashed border-stone-300 rounded p-3 space-y-2 text-[10px]">
+                      <div className="flex items-center justify-between text-[10px] font-mono font-bold text-stone-600 uppercase tracking-wider">
+                        <span>Testing Credentials Portal</span>
+                        <span className="text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded text-[8px] font-extrabold uppercase">Active</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setLoginForm({ email: "admin@filmpack.com", password: "admin123" })}
+                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          title="Auto-fill Administrator credentials"
+                        >
+                          🔑 Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLoginForm({ email: "recruiter@uflex.com", password: "recruiter123" })}
+                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          title="Auto-fill Plant Recruiter credentials"
+                        >
+                          💼 Recruiter
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLoginForm({ email: "applicant@gmail.com", password: "applicant123" })}
+                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          title="Auto-fill Candidate / Operator credentials"
+                        >
+                          👤 Applicant
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-stone-400 font-serif italic text-center">
+                        Click any badge above to auto-fill development logins instantly.
+                      </p>
                     </div>
 
                     <button
@@ -446,14 +493,24 @@ export default function App() {
                         />
                       </div>
 
-                      <input
-                        type="password"
-                        required
-                        placeholder="Access Password"
-                        value={signupForm.password}
-                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                        className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showSignupPassword ? "text" : "password"}
+                          required
+                          placeholder="Access Password"
+                          value={signupForm.password}
+                          onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                          className="w-full bg-white border border-stone-300 rounded-sm pl-3 pr-10 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupPassword(!showSignupPassword)}
+                          className="absolute right-3 top-2 text-stone-400 hover:text-stone-700 cursor-pointer flex items-center h-full"
+                          title={showSignupPassword ? "Hide password" : "Show password"}
+                        >
+                          {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
 
                       <div>
                         <label className="block text-stone-500 font-mono text-[10px] uppercase mb-1.5 font-bold tracking-wider">Apply as role:</label>

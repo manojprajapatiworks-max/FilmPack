@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Job, Application, Interview } from "../types";
 import { Plus, Edit, Trash2, Calendar, FileText, Download, Check, X, Search, Filter, AlertCircle, RefreshCw, Send, CheckCircle, Clock, Award, MapPin, Briefcase } from "lucide-react";
+import AllianceGazette from "./AllianceGazette";
 
 interface RecruiterDashboardProps {
   currentUser: User;
@@ -14,7 +15,7 @@ export default function RecruiterDashboard({ currentUser, siteConfig }: Recruite
   const [isLoading, setIsLoading] = useState(true);
 
   // Active View Tab
-  const [activeTab, setActiveTab] = useState<"manage_jobs" | "view_applications" | "interviews">("manage_jobs");
+  const [activeTab, setActiveTab] = useState<"manage_jobs" | "view_applications" | "interviews" | "gazette">("manage_jobs");
 
   // Job Form Modal State
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
@@ -425,6 +426,14 @@ ${app.remarks || 'None provided'}
               }`}
             >
               Interviews ({interviews.length})
+            </button>
+            <button
+              onClick={() => { setActiveTab("gazette"); setSelectedApp(null); }}
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "gazette" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              }`}
+            >
+              Alliance Gazette 📰
             </button>
           </div>
         </div>
@@ -999,6 +1008,13 @@ ${app.remarks || 'None provided'}
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* GAZETTE NEWS FEED VIEW */}
+        {activeTab === "gazette" && (
+          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+            <AllianceGazette currentUser={currentUser} />
           </div>
         )}
 

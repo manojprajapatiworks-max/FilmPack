@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Job, Application, AdminStats, SiteConfig, ShowcaseImage, TickerItem } from "../types";
-import { Shield, Users, Briefcase, CheckCircle, Clock, AlertTriangle, Check, X, Search, Edit, Trash2, Key, RefreshCw, Plus, Download, Eye, FileText, Ban, Sliders, Globe, Link as LinkIcon, Image, Activity, Save } from "lucide-react";
+import { Shield, Users, Briefcase, CheckCircle, Clock, AlertTriangle, Check, X, Search, Edit, Trash2, Key, RefreshCw, Plus, Download, Eye, FileText, Ban, Sliders, Globe, Link as LinkIcon, Image, Activity, Save, Newspaper } from "lucide-react";
+import AllianceGazette from "./AllianceGazette";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 interface AdminDashboardProps {
@@ -72,7 +73,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
   }, [propsSiteConfig]);
 
   // Active view
-  const [activeSection, setActiveSection] = useState<"stats" | "pending_approvals" | "user_management" | "job_management" | "site_config">("stats");
+  const [activeSection, setActiveSection] = useState<"stats" | "pending_approvals" | "user_management" | "job_management" | "site_config" | "gazette_moderation">("stats");
 
   // Selection state for multi-approve recruiters
   const [selectedRecruiterIds, setSelectedRecruiterIds] = useState<string[]>([]);
@@ -569,6 +570,15 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
               <Sliders className="h-3.5 w-3.5 text-amber-600" />
               Website Editor
             </button>
+            <button
+              onClick={() => setActiveSection("gazette_moderation")}
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
+                activeSection === "gazette_moderation" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              }`}
+            >
+              <Newspaper className="h-3.5 w-3.5 text-stone-700" />
+              Gazette Moderation
+            </button>
           </div>
         </div>
       </div>
@@ -646,6 +656,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
+                        isAnimationActive={false}
                         data={[
                           { name: "Candidates", value: stats.totalApplicants || 1, color: "#10b981" },
                           { name: "Plant Recruiters", value: stats.totalRecruiters || 1, color: "#f59e0b" },
@@ -686,6 +697,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
+                        isAnimationActive={false}
                         data={[
                           { name: "Open Vacancies", value: stats.openJobs || 1, color: "#06b6d4" },
                           { name: "Closed Postings", value: stats.closedJobs || 0, color: "#64748b" },
@@ -1727,6 +1739,13 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                 {isSavingConfig ? "Saving & Deploying Configuration..." : "Save All Website Configurations"}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* GAZETTE MODERATION VIEW */}
+        {activeSection === "gazette_moderation" && (
+          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+            <AllianceGazette currentUser={currentUser} isAdminView={true} />
           </div>
         )}
 
