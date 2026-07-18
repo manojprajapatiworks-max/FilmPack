@@ -5,7 +5,7 @@ import ApplicantDashboard from "./components/ApplicantDashboard";
 import RecruiterDashboard from "./components/RecruiterDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import PackagingFilmShowcase from "./components/PackagingFilmShowcase";
-import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, MessageSquare, Globe, MapPin, Eye, EyeOff } from "lucide-react";
+import { Film, Building, Shield, User as UserIcon, Lock, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Instagram, Facebook, MessageCircle, Linkedin, MessageSquare, Globe, MapPin, Eye, EyeOff, Layers } from "lucide-react";
 
 const HD_ENTRANCE_IMAGES = [
   {
@@ -286,16 +286,51 @@ export default function App() {
                     </div>
                     <p className="text-xs font-serif text-slate-800 font-bold mb-3">{HD_ENTRANCE_IMAGES[authBgIndex].label}</p>
                     
-                    <p className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 border-t border-slate-100 pt-2">Co-Extrusion Layer Structure</p>
-                    <div className="mt-2 flex gap-1 h-2">
-                      <div className="flex-1 bg-cyan-500/80 rounded-full shadow-xs" title="Top Sealing Layer (2µ)" />
-                      <div className="flex-[3_3_0%] bg-blue-500/80 rounded-full shadow-xs" title="Core Barrier Layer (12µ)" />
-                      <div className="flex-1 bg-purple-500/80 rounded-full shadow-xs" title="Printable Layer (2µ)" />
-                    </div>
-                    <div className="mt-1.5 flex justify-between text-[8px] font-mono text-slate-500 font-semibold">
-                      <span>Seal (2µ)</span>
-                      <span>Core BOPP/CPP (12µ)</span>
-                      <span>Corona Print (2µ)</span>
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-slate-800 mb-2 border-t border-slate-150 pt-3 font-bold flex items-center gap-1">
+                      <Layers className="h-3.5 w-3.5 text-cyan-600 animate-pulse" />
+                      Extruder Co-Extrusion Layers
+                    </p>
+
+                    <div className="space-y-3.5">
+                      {/* 3-Layer Co-Extrusion */}
+                      <div className="bg-slate-50/50 p-2.5 rounded-lg border border-slate-200/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[9px] font-mono uppercase font-bold text-slate-700">3-Layer Co-Extruded Film (Standard BOPP)</span>
+                          <span className="text-[9px] font-mono text-cyan-600 font-bold bg-cyan-50 px-1.5 py-0.5 rounded border border-cyan-100">16µ Total</span>
+                        </div>
+                        <div className="flex gap-0.5 h-3 rounded-md overflow-hidden bg-slate-200/40 p-0.5 border border-slate-200/50">
+                          <div className="w-[15%] bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-xs shadow-xs" title="Top Seal Layer (2µ)" />
+                          <div className="w-[70%] bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xs shadow-xs" title="Core BOPP Layer (12µ)" />
+                          <div className="w-[15%] bg-gradient-to-r from-purple-400 to-purple-500 rounded-xs shadow-xs" title="Corona Treatment / Print Layer (2µ)" />
+                        </div>
+                        <div className="mt-1 flex justify-between text-[8px] font-mono text-slate-500 font-semibold">
+                          <span>Seal (2µ)</span>
+                          <span>Core BOPP/CPP (12µ)</span>
+                          <span>Corona Print (2µ)</span>
+                        </div>
+                      </div>
+
+                      {/* 5-Layer Co-Extrusion */}
+                      <div className="bg-slate-50/50 p-2.5 rounded-lg border border-slate-200/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[9px] font-mono uppercase font-bold text-slate-700">5-Layer High-Barrier Co-Extruded Film</span>
+                          <span className="text-[9px] font-mono text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">25µ Total</span>
+                        </div>
+                        <div className="flex gap-0.5 h-3 rounded-md overflow-hidden bg-slate-200/40 p-0.5 border border-slate-200/50">
+                          <div className="w-[12%] bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-xs" title="PE Sealing Layer (3µ)" />
+                          <div className="w-[12%] bg-gradient-to-r from-amber-400 to-amber-500 rounded-xs" title="Adhesive Tie Layer (3µ)" />
+                          <div className="w-[52%] bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xs" title="EVOH Oxygen Barrier Core (13µ)" />
+                          <div className="w-[12%] bg-gradient-to-r from-amber-400 to-amber-500 rounded-xs" title="Adhesive Tie Layer (3µ)" />
+                          <div className="w-[12%] bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-xs" title="Outer Gloss PET Layer (3µ)" />
+                        </div>
+                        <div className="mt-1 flex justify-between text-[7.5px] font-mono text-slate-500 font-semibold">
+                          <span>PE Seal (3µ)</span>
+                          <span>Tie (3µ)</span>
+                          <span className="text-indigo-600 font-bold">EVOH Core (13µ)</span>
+                          <span>Tie (3µ)</span>
+                          <span>PET Print (3µ)</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
