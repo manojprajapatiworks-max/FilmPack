@@ -398,39 +398,39 @@ ${app.remarks || 'None provided'}
   });
 
   return (
-    <div className="min-h-screen bg-[#FCFAF6] text-stone-900 font-sans pb-12">
+    <div className="min-h-screen bg-transparent text-slate-800 font-sans pb-12">
       {/* Sub Navbar */}
-      <div className="bg-white border-b border-stone-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-white/70 border-b border-slate-200/60 backdrop-blur-md rounded-xl shadow-xs">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex space-x-4 sm:space-x-8 h-14 items-center overflow-x-auto">
             <button
               onClick={() => { setActiveTab("manage_jobs"); setSelectedApp(null); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeTab === "manage_jobs" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "manage_jobs" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Manage Postings ({jobs.length})
             </button>
             <button
               onClick={() => { setActiveTab("view_applications"); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeTab === "view_applications" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "view_applications" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               View Candidates ({applications.length})
             </button>
             <button
               onClick={() => { setActiveTab("interviews"); setSelectedApp(null); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeTab === "interviews" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "interviews" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Interviews ({interviews.length})
             </button>
             <button
               onClick={() => { setActiveTab("gazette"); setSelectedApp(null); }}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeTab === "gazette" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer font-bold whitespace-nowrap ${
+                activeTab === "gazette" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Alliance Gazette 📰
@@ -439,14 +439,14 @@ ${app.remarks || 'None provided'}
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <main className="max-w-7xl mx-auto mt-8">
         {actionMessage && (
-          <div className="mb-6 bg-stone-900 text-amber-400 p-4 rounded-md shadow-md border border-amber-500/30 flex items-center justify-between font-mono text-xs">
+          <div className="mb-6 bg-white text-cyan-800 p-4 rounded-xl shadow-md border border-cyan-200 flex items-center justify-between font-mono text-xs backdrop-blur-md">
             <span className="flex items-center gap-2 font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block animate-pulse"></span>
               {actionMessage}
             </span>
-            <button onClick={() => setActionMessage(null)} className="text-stone-400 hover:text-white font-bold">✕</button>
+            <button onClick={() => setActionMessage(null)} className="text-slate-400 hover:text-slate-755 font-bold cursor-pointer">✕</button>
           </div>
         )}
 
@@ -1013,7 +1013,7 @@ ${app.remarks || 'None provided'}
 
         {/* GAZETTE NEWS FEED VIEW */}
         {activeTab === "gazette" && (
-          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+          <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md">
             <AllianceGazette currentUser={currentUser} />
           </div>
         )}

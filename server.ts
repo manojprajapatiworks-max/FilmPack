@@ -157,7 +157,7 @@ app.post("/api/auth/login", (req, res) => {
   }
 
   if (user.status === "rejected") {
-    return res.status(403).json({ error: "Your recruiter registration request was rejected by the Administrator." });
+    return res.status(403).json({ error: "Your registration request was rejected by the Administrator." });
   }
 
   // Update last login
@@ -199,7 +199,7 @@ app.post("/api/auth/register", (req, res) => {
     mobile,
     passwordHash: hashPassword(password), // Store hashed password securely
     role: role as 'applicant' | 'recruiter',
-    status: isRecruiter ? "pending_approval" : "approved", // Recruiters need approval
+    status: "pending_approval", // Both recruiters and applicants need admin approval
     createdDate: new Date().toISOString()
   };
 
@@ -221,9 +221,7 @@ app.post("/api/auth/register", (req, res) => {
     email: newUser.email,
     role: newUser.role,
     status: newUser.status,
-    message: isRecruiter 
-      ? "Registration submitted. Your account is pending Admin approval." 
-      : "Registration successful! You can now log in."
+    message: "Registration submitted. Your account is pending Admin approval."
   });
 });
 
@@ -927,12 +925,17 @@ app.post("/api/admin/users/approve-multiple", (req, res) => {
       modified = true;
 
       // Log notification
+      const roleText = u.role === "recruiter" ? "recruiter" : "applicant";
+      const actionText = u.role === "recruiter" 
+        ? "You can now log in and post packaging film jobs." 
+        : "Your account is now fully authorized; you can log in to search, explore, and apply for technical plant roles.";
+
       nots.push({
         id: generateId("not"),
         userId: u.id,
         type: "email",
         recipient: u.email,
-        message: `Dear ${u.name},\n\nYour recruiter account registration at FilmPack Careers has been approved by the Administrator in a batch approval workflow. You can now log in and post packaging film jobs.`,
+        message: `Dear ${u.name},\n\nYour ${roleText} account registration at FilmPack Careers has been approved by the Administrator in a batch approval workflow. ${actionText}`,
         sentAt: new Date().toISOString()
       });
     }
@@ -943,7 +946,7 @@ app.post("/api/admin/users/approve-multiple", (req, res) => {
     db.saveNotifications(nots);
   }
 
-  res.json({ message: `Successfully approved ${ids.length} recruiters.` });
+  res.json({ message: `Successfully approved ${ids.length} registration requests.` });
 });
 
 // ==========================================

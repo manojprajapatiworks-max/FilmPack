@@ -448,76 +448,76 @@ export default function AllianceGazette({ currentUser, isAdminView = false }: Al
         {/* AI News Triggering Side Panel */}
         <div className="lg:col-span-4 space-y-6">
           {isAdmin && (
-            <div className="bg-[#FAF8F5] border border-stone-300 rounded-sm p-5 space-y-4 shadow-2xs">
-              <div className="flex items-center gap-2 border-b border-stone-200 pb-2">
-                <Sparkles className="h-5 w-5 text-amber-600" />
-                <h3 className="text-xs font-mono font-bold text-stone-900 uppercase tracking-widest">
+            <div className="bg-white/75 border border-slate-200 rounded-2xl p-5 space-y-4 shadow-md backdrop-blur-md">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <Sparkles className="h-5 w-5 text-cyan-600" />
+                <h3 className="text-xs font-mono font-bold text-slate-800 uppercase tracking-widest">
                   AI Industrial Intelligence
                 </h3>
               </div>
               
-              <p className="text-xs font-serif text-stone-600 leading-relaxed">
+              <p className="text-xs font-sans text-slate-600 leading-relaxed">
                 Trigger Gemini's live news crawler with <b>Google Search Grounding</b>. The engine gathers the latest late-2025 or 2026 breakthroughs, capacity scale-ups, or plant news, drafting a professional blog cutout automatically.
               </p>
 
-              <div className="h-px bg-stone-200" />
+              <div className="h-px bg-slate-100" />
 
               <div className="space-y-3.5">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono font-bold text-stone-500 uppercase block tracking-wider">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase block tracking-wider">
                     Target News Core Topic:
                   </label>
                   <select
                     value={aiTopic}
                     onChange={(e) => setAiTopic(e.target.value)}
-                    className="w-full text-xs font-mono border border-stone-300 bg-white rounded p-2 text-stone-800 focus:outline-none focus:ring-1 focus:ring-stone-500"
+                    className="w-full text-xs font-mono border border-slate-200 bg-white rounded-lg p-2 text-slate-850 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     disabled={isGeneratingAi}
                   >
-                    <option value="Technology">Technology (Stenter speeds, metallizing)</option>
-                    <option value="Sustainability">Sustainability (Monomaterial, bio-resins)</option>
-                    <option value="Market Trends">Market Trends (BOPP pricing, trade corridors)</option>
-                    <option value="Raw Materials">Raw Materials (Paraxylene, resin supplies)</option>
-                    <option value="Plants">Plants (New line start-ups, audits)</option>
+                    <option value="Technology" className="bg-white text-slate-800">Technology (Stenter speeds, metallizing)</option>
+                    <option value="Sustainability" className="bg-white text-slate-800">Sustainability (Monomaterial, bio-resins)</option>
+                    <option value="Market Trends" className="bg-white text-slate-800">Market Trends (BOPP pricing, trade corridors)</option>
+                    <option value="Raw Materials" className="bg-white text-slate-800">Raw Materials (Paraxylene, resin supplies)</option>
+                    <option value="Plants" className="bg-white text-slate-800">Plants (New line start-ups, audits)</option>
                   </select>
                 </div>
 
                 {aiSuccessMessage && (
-                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-sm text-[10px] font-mono space-y-1">
-                    <p className="font-bold text-emerald-800 flex items-center gap-1">
+                  <div className="bg-cyan-50 border border-cyan-200 text-cyan-800 p-3 rounded-lg text-[10px] font-mono space-y-1">
+                    <p className="font-bold text-cyan-700 flex items-center gap-1">
                       <CheckCircle className="h-3 w-3" />
                       Feed Update Submitted!
                     </p>
-                    <p className="text-stone-600 leading-relaxed">{aiSuccessMessage}</p>
+                    <p className="text-slate-600 leading-relaxed">{aiSuccessMessage}</p>
                   </div>
                 )}
 
                 {aiErrorMessage && (
-                  <div className="bg-red-50 border border-red-200 text-red-900 p-3 rounded-sm text-[10px] font-mono space-y-1">
-                    <p className="font-bold text-red-800 flex items-center gap-1">
+                  <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-[10px] font-mono space-y-1">
+                    <p className="font-bold text-red-700 flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" />
                       AI Engine Blocked
                     </p>
-                    <p className="text-stone-600 leading-relaxed">{aiErrorMessage}</p>
+                    <p className="text-slate-600 leading-relaxed">{aiErrorMessage}</p>
                   </div>
                 )}
 
                 {isGeneratingAi ? (
-                  <div className="p-3.5 bg-stone-900 text-amber-400 rounded-sm space-y-3 shadow-inner">
+                  <div className="p-3.5 bg-slate-50 text-cyan-700 rounded-lg space-y-3 shadow-inner border border-cyan-200">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
-                      <span className="text-[10px] font-mono font-bold tracking-wider uppercase animate-pulse">Gathering news...</span>
+                      <Loader2 className="h-4 w-4 animate-spin text-cyan-600" />
+                      <span className="text-[10px] font-mono font-bold tracking-wider uppercase animate-pulse text-cyan-700">Gathering news...</span>
                     </div>
-                    <p className="text-[9px] font-mono text-stone-400 leading-relaxed">
+                    <p className="text-[9px] font-mono text-slate-550 leading-relaxed">
                       {aiSteps || "Consulting satellite factory feeds..."}
                     </p>
-                    <div className="w-full bg-stone-800 h-1 rounded overflow-hidden">
-                      <div className="bg-amber-400 h-full w-2/3 animate-pulse" />
+                    <div className="w-full bg-slate-200 h-1 rounded overflow-hidden">
+                      <div className="bg-cyan-500 h-full w-2/3 animate-pulse" />
                     </div>
                   </div>
                 ) : (
                   <button
                     onClick={handleTriggerAiGenerate}
-                    className="w-full flex items-center justify-center gap-2 bg-stone-950 hover:bg-stone-800 text-amber-400 text-xs font-mono font-bold uppercase py-2.5 px-4 rounded-sm transition shadow-sm border border-stone-800"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-mono font-bold uppercase py-2.5 px-4 rounded-lg transition shadow-md shadow-cyan-500/10 cursor-pointer animate-fade-in"
                   >
                     <Sparkles className="h-3.5 w-3.5" />
                     Trigger AI News Feed
@@ -525,19 +525,19 @@ export default function AllianceGazette({ currentUser, isAdminView = false }: Al
                 )}
               </div>
 
-              <div className="h-px bg-stone-200 pt-1" />
-              <div className="text-[9px] text-stone-500 font-mono flex items-center gap-1.5 uppercase font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping"></span>
+              <div className="h-px bg-slate-100 pt-1" />
+              <div className="text-[9px] text-slate-400 font-mono flex items-center gap-1.5 uppercase font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 inline-block animate-ping"></span>
                 Moderator Queue Watcher Active
               </div>
             </div>
           )}
 
           {/* Paper cutouts editorial quote */}
-          <div className="p-5 border-l-2 border-stone-900 bg-stone-50 font-serif italic text-xs text-stone-600 leading-relaxed relative">
-            <span className="absolute -top-3 left-4 text-3xl text-stone-300 font-black">“</span>
+          <div className="p-5 border-l-2 border-cyan-500 bg-white/60 rounded-r-2xl border-y border-r border-slate-200 shadow-xs font-sans italic text-xs text-slate-700 leading-relaxed relative">
+            <span className="absolute -top-3 left-4 text-3xl text-cyan-500/10 font-black">“</span>
             "We do not merely extrude film; we isolate oxygen, seal shelf-lives, and sustain the supply chains that feed 1.4 billion people."
-            <p className="text-[9px] font-mono uppercase font-bold tracking-wider text-stone-400 mt-2.5 not-italic">— FilmPack Alliance Executive Board</p>
+            <p className="text-[9px] font-mono uppercase font-bold tracking-wider text-slate-500 mt-2.5 not-italic">— FilmPack Alliance Executive Board</p>
           </div>
         </div>
       </div>

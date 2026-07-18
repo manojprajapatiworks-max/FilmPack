@@ -183,25 +183,16 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setAuthSuccess(data.message);
-        setLoginForm({ email: signupForm.email, password: signupForm.password });
-        
-        // If it's applicant, auto login is convenient! 
-        // For recruiter, it needs admin approval so keep them on login view with the warning.
-        if (signupForm.role === "applicant") {
-          // Perform auto login
-          const loginRes = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: signupForm.email, password: signupForm.password })
-          });
-          if (loginRes.ok) {
-            const user: User = await loginRes.json();
-            localStorage.setItem("filmpack_user", JSON.stringify(user));
-            setCurrentUser(user);
-            return;
-          }
-        }
-        
+        setLoginForm({ email: "", password: "" });
+        setSignupForm({
+          name: "",
+          email: "",
+          mobile: "",
+          password: "",
+          role: "applicant",
+          companyName: "",
+          contactPerson: ""
+        });
         setIsLoginView(true);
       } else {
         const errData = await res.json();
@@ -224,7 +215,7 @@ export default function App() {
   };
 
   return (
-    <div className="bg-[#FCFAF6] min-h-screen text-stone-900 flex flex-col justify-between">
+    <div className="min-h-screen text-slate-800 flex flex-col justify-between relative z-10 bg-transparent">
       
       {/* Top Banner & Header */}
       <Navbar
@@ -238,7 +229,7 @@ export default function App() {
       <div className="flex-1 flex flex-col">
         {currentUser ? (
           /* Role Dashboard Router Router */
-          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full animate-fade-in">
             <PackagingFilmShowcase />
             {currentUser.role === "applicant" && (
               <ApplicantDashboard currentUser={currentUser} siteConfig={siteConfig} />
@@ -252,56 +243,56 @@ export default function App() {
           </div>
         ) : (
           /* Authentication Screen Screen */
-          <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-4rem-4.5rem)]">
+          <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-4rem-4.5rem)] py-4 sm:py-6 gap-6 px-4">
             
             {/* Left Decorative/Info Side - Joyful Packaging Film Web Aesthetic with HD Photo Reel */}
-            <div className="hidden lg:flex lg:col-span-5 bg-stone-900 text-stone-100 p-10 flex-col justify-between relative overflow-hidden border-r border-stone-800 shadow-2xl">
+            <div className="hidden lg:flex lg:col-span-5 bg-white/50 text-slate-800 p-10 flex-col justify-between relative overflow-hidden border border-slate-200/60 rounded-2xl shadow-xl backdrop-blur-md">
               {/* Animated HD Photo Background */}
               <img
                 key={authBgIndex}
                 src={HD_ENTRANCE_IMAGES[authBgIndex].url}
                 alt="Packaging Film Manufacturing"
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-30 scale-105 transition-all duration-1000 ease-out pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-15 scale-105 transition-all duration-1000 ease-out pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/80 to-stone-950/70 pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-slate-100/90 to-slate-100/60 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(rgba(99,102,241,0.06)_1px,transparent_1px)] [background-size:20px_20px] opacity-30 pointer-events-none" />
               
               <div className="space-y-8 relative z-10">
-                <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-widest backdrop-blur-md shadow-sm font-bold">
-                  <Film className="h-4 w-4 text-amber-400" />
+                <div className="inline-flex items-center gap-2 bg-cyan-50 border border-cyan-200 text-cyan-700 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest backdrop-blur-md shadow-xs font-bold">
+                  <Film className="h-4 w-4 text-cyan-500 animate-pulse" />
                   INDIA'S #1 FILM MANUFACTURING NETWORK
                 </div>
                 
                 <div className="space-y-3">
-                  <h2 className="text-4xl font-serif font-bold text-white tracking-tight leading-tight drop-shadow-md">
+                  <h2 className="text-4xl font-serif font-bold text-slate-900 tracking-tight leading-tight">
                     The Pulse of <br />
-                    <span className="italic text-amber-300 font-normal">Flexible Packaging</span> <br />
+                    <span className="italic text-cyan-600 font-normal">Flexible Packaging</span> <br />
                     Careers.
                   </h2>
-                  <p className="text-stone-300 text-sm leading-relaxed font-serif drop-shadow">
+                  <p className="text-slate-600 text-sm leading-relaxed">
                     Connecting certified extrusion operators, slitting technicians, and plant managers with leading BOPP, BOPET & CPP film facilities.
                   </p>
                 </div>
 
                 {/* Live HD Image Caption & Grade Badge */}
                 <div className="pt-2 space-y-3">
-                  <div className="relative p-5 bg-stone-900/85 border border-stone-700/80 rounded-md backdrop-blur-md shadow-xl">
+                  <div className="relative p-5 bg-white/75 border border-slate-200/80 rounded-xl backdrop-blur-md shadow-md">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400 flex items-center gap-1.5 font-bold">
-                        <span className="w-2 h-2 bg-emerald-400 rounded-full inline-block" />
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 flex items-center gap-1.5 font-bold">
+                        <span className="w-2 h-2 bg-cyan-500 rounded-full inline-block animate-pulse" />
                         LIVE PLANT FEED
                       </p>
-                      <span className="text-[9px] font-mono text-stone-400 bg-stone-800 px-2 py-0.5 rounded">LINE #{authBgIndex + 1}</span>
+                      <span className="text-[9px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded">LINE #{authBgIndex + 1}</span>
                     </div>
-                    <p className="text-xs font-serif text-white font-bold mb-3">{HD_ENTRANCE_IMAGES[authBgIndex].label}</p>
+                    <p className="text-xs font-serif text-slate-800 font-bold mb-3">{HD_ENTRANCE_IMAGES[authBgIndex].label}</p>
                     
-                    <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 mb-1 border-t border-stone-800 pt-2">Co-Extrusion Layer Structure</p>
+                    <p className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 border-t border-slate-100 pt-2">Co-Extrusion Layer Structure</p>
                     <div className="mt-2 flex gap-1 h-2">
-                      <div className="flex-1 bg-amber-500/80 rounded-full shadow-2xs" title="Top Sealing Layer (2µ)" />
-                      <div className="flex-[3_3_0%] bg-emerald-500/80 rounded-full shadow-2xs" title="Core Barrier Layer (12µ)" />
-                      <div className="flex-1 bg-amber-500/80 rounded-full shadow-2xs" title="Printable Layer (2µ)" />
+                      <div className="flex-1 bg-cyan-500/80 rounded-full shadow-xs" title="Top Sealing Layer (2µ)" />
+                      <div className="flex-[3_3_0%] bg-blue-500/80 rounded-full shadow-xs" title="Core Barrier Layer (12µ)" />
+                      <div className="flex-1 bg-purple-500/80 rounded-full shadow-xs" title="Printable Layer (2µ)" />
                     </div>
-                    <div className="mt-1.5 flex justify-between text-[8px] font-mono text-stone-400 font-semibold">
+                    <div className="mt-1.5 flex justify-between text-[8px] font-mono text-slate-500 font-semibold">
                       <span>Seal (2µ)</span>
                       <span>Core BOPP/CPP (12µ)</span>
                       <span>Corona Print (2µ)</span>
@@ -310,59 +301,59 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="space-y-4 relative z-10 pt-6 border-t border-stone-800/80">
+              <div className="space-y-4 relative z-10 pt-6 border-t border-slate-200/60">
                 <div className="grid grid-cols-3 gap-2.5 text-left">
-                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
-                    <p className="text-xl font-black text-white font-mono">14+</p>
-                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Plants Live</p>
+                  <div className="bg-white/85 p-2.5 rounded-lg border border-slate-200/50 backdrop-blur-md">
+                    <p className="text-xl font-black text-slate-800 font-mono">14+</p>
+                    <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono">Plants Live</p>
                   </div>
-                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
-                    <p className="text-xl font-black text-amber-400 font-mono">480m</p>
-                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Line Speed</p>
+                  <div className="bg-white/85 p-2.5 rounded-lg border border-slate-200/50 backdrop-blur-md animate-pulse">
+                    <p className="text-xl font-black text-cyan-600 font-mono">480m</p>
+                    <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono">Line Speed</p>
                   </div>
-                  <div className="bg-stone-900/80 p-2.5 rounded border border-stone-800 backdrop-blur-xs">
-                    <p className="text-xl font-black text-emerald-400 font-mono">100%</p>
-                    <p className="text-[9px] text-stone-400 uppercase tracking-widest font-mono">Audit Certified</p>
+                  <div className="bg-white/85 p-2.5 rounded-lg border border-slate-200/50 backdrop-blur-md">
+                    <p className="text-xl font-black text-purple-600 font-mono">100%</p>
+                    <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono">Audit Certified</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-stone-400 font-mono tracking-wider uppercase flex items-center gap-1.5 font-bold">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
+                <p className="text-[10px] text-cyan-600 font-mono tracking-wider uppercase flex items-center gap-1.5 font-bold">
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full inline-block" />
                   SECURE ENTERPRISE HIRING GATEWAY
                 </p>
               </div>
             </div>
 
             {/* Right Form Side */}
-            <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#FCFAF6]/60 relative">
+            <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center py-6 sm:py-8 px-2 sm:px-6 lg:px-8 relative bg-transparent">
               {/* Matrix grid background */}
-              <div className="absolute inset-0 bg-[radial-gradient(#e5e5e5_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(rgba(99,102,241,0.04)_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none" />
               
-              <div className="max-w-md w-full space-y-6 sm:space-y-8 bg-white border border-stone-200 rounded-sm p-5 sm:p-8 shadow-md relative z-10">
+              <div className="max-w-md w-full space-y-6 sm:space-y-8 glass-card p-6 sm:p-8 relative z-10 shadow-xl border border-white">
                 
                 {/* Heading */}
                 <div className="text-center">
-                  <div className="bg-stone-900 h-10 w-10 rounded-sm flex items-center justify-center mx-auto mb-3 text-stone-100">
+                  <div className="bg-gradient-to-tr from-cyan-600 to-blue-600 h-11 w-11 rounded-xl flex items-center justify-center mx-auto mb-3 text-white shadow-md shadow-cyan-500/20">
                     <Film className="h-5 w-5" />
                   </div>
-                  <h2 className="text-xl font-bold tracking-tight text-stone-900 editorial-title">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-serif">
                     {isLoginView ? "Hiring Entrance Gate" : "Register Candidate Account"}
                   </h2>
-                  <p className="text-xs text-stone-500 mt-1 font-serif italic">
+                  <p className="text-xs text-slate-500 mt-1 italic">
                     {isLoginView ? "Access operator roles & lamination desks" : "Submit profile for technical screening"}
                   </p>
                 </div>
 
                 {/* Warnings and Status Banners */}
                 {authError && (
-                  <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-sm text-xs flex items-start gap-2 leading-relaxed">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-lg text-xs flex items-start gap-2 leading-relaxed backdrop-blur-md">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-500" />
                     <span>{authError}</span>
                   </div>
                 )}
 
                 {authSuccess && (
-                  <div className="bg-stone-100 border border-stone-200 text-stone-800 p-3 rounded-sm text-xs flex items-start gap-2 leading-relaxed">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-stone-850" />
+                  <div className="bg-cyan-50 border border-cyan-200 text-cyan-700 p-3.5 rounded-lg text-xs flex items-start gap-2 leading-relaxed backdrop-blur-md">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-cyan-500" />
                     <span>{authSuccess}</span>
                   </div>
                 )}
@@ -370,34 +361,41 @@ export default function App() {
                 {/* Auth Forms */}
                 {isLoginView ? (
                   /* Login Form */
-                  <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+                  <form key="login-form" id="login-form" onSubmit={handleLoginSubmit} className="space-y-4 text-xs" autoComplete="off">
                     <div className="space-y-3">
                       <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-cyan-600" />
                         <input
+                          id="login-email"
+                          name="login-email"
                           type="email"
                           required
                           placeholder="Registered Email"
+                          autoComplete="off"
                           value={loginForm.email}
                           onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full glass-input pl-9 pr-3 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                         />
                       </div>
 
                       <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-cyan-600" />
                         <input
+                          id="login-password"
+                          name="login-password"
                           type={showPassword ? "text" : "password"}
                           required
                           placeholder="Security Password"
+                          autoComplete="current-password"
                           value={loginForm.password}
                           onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm pl-9 pr-10 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full glass-input pl-9 pr-10 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                         />
                         <button
+                          id="toggle-login-password-btn"
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2 text-stone-400 hover:text-stone-700 cursor-pointer flex items-center h-full"
+                          className="absolute right-3 top-2 text-slate-400 hover:text-slate-700 cursor-pointer flex items-center h-full"
                           title={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -406,56 +404,75 @@ export default function App() {
                     </div>
 
                     {/* Quick Access Testing Credentials */}
-                    <div className="bg-[#FCFAF6] border border-dashed border-stone-300 rounded p-3 space-y-2 text-[10px]">
-                      <div className="flex items-center justify-between text-[10px] font-mono font-bold text-stone-600 uppercase tracking-wider">
+                    <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-xl p-4 space-y-2.5 text-[10px] backdrop-blur-md">
+                      <div className="flex items-center justify-between text-[10px] font-mono font-bold text-cyan-700 uppercase tracking-wider">
                         <span>Testing Credentials Portal</span>
-                        <span className="text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded text-[8px] font-extrabold uppercase">Active</span>
+                        <span className="text-cyan-700 bg-cyan-50 px-1.5 py-0.2 rounded text-[8px] font-extrabold uppercase border border-cyan-200">Active</span>
                       </div>
                       <div className="grid grid-cols-3 gap-1.5">
                         <button
+                          id="btn-credential-admin"
                           type="button"
                           onClick={() => setLoginForm({ email: "admin@filmpack.com", password: "admin123" })}
-                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 shadow-xs font-mono py-1.5 px-1 rounded-lg text-center transition active:scale-95 font-bold cursor-pointer hover:border-cyan-400"
                           title="Auto-fill Administrator credentials"
                         >
                           🔑 Admin
                         </button>
                         <button
+                          id="btn-credential-recruiter"
                           type="button"
                           onClick={() => setLoginForm({ email: "recruiter@uflex.com", password: "recruiter123" })}
-                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 shadow-xs font-mono py-1.5 px-1 rounded-lg text-center transition active:scale-95 font-bold cursor-pointer hover:border-cyan-400"
                           title="Auto-fill Plant Recruiter credentials"
                         >
                           💼 Recruiter
                         </button>
                         <button
+                          id="btn-credential-applicant"
                           type="button"
                           onClick={() => setLoginForm({ email: "applicant@gmail.com", password: "applicant123" })}
-                          className="bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-mono py-1.5 px-1 rounded-sm text-center transition active:scale-95 shadow-2xs font-bold cursor-pointer"
+                          className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 shadow-xs font-mono py-1.5 px-1 rounded-lg text-center transition active:scale-95 font-bold cursor-pointer hover:border-cyan-400"
                           title="Auto-fill Candidate / Operator credentials"
                         >
                           👤 Applicant
                         </button>
                       </div>
-                      <p className="text-[9px] text-stone-400 font-serif italic text-center">
+                      <p className="text-[9px] text-slate-500 italic text-center">
                         Click any badge above to auto-fill development logins instantly.
                       </p>
                     </div>
 
                     <button
+                      id="login-submit-btn"
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-stone-900 hover:bg-stone-850 text-white font-bold py-2.5 px-4 rounded-sm flex items-center justify-center gap-1 text-xs transition font-mono uppercase tracking-widest shadow-xs cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-1.5 text-xs transition font-mono uppercase tracking-widest shadow-lg shadow-cyan-500/10 cursor-pointer active:scale-98"
                     >
                       Authorize Account
                       <ArrowRight className="h-3.5 w-3.5" />
                     </button>
 
-                    <div className="text-center">
+                    <div className="text-center pt-2">
                       <button
+                        id="toggle-to-signup-btn"
                         type="button"
-                        onClick={() => { setIsLoginView(false); setAuthError(null); setAuthSuccess(null); }}
-                        className="text-stone-800 hover:text-stone-950 hover:underline font-mono text-[11px] uppercase tracking-wider font-bold cursor-pointer"
+                        onClick={() => {
+                          setIsLoginView(false);
+                          setAuthError(null);
+                          setAuthSuccess(null);
+                          setLoginForm({ email: "", password: "" });
+                          setSignupForm({
+                            name: "",
+                            email: "",
+                            mobile: "",
+                            password: "",
+                            role: "applicant",
+                            companyName: "",
+                            contactPerson: ""
+                          });
+                        }}
+                        className="text-slate-500 hover:text-slate-800 hover:underline font-mono text-[11px] uppercase tracking-wider font-bold cursor-pointer transition-colors"
                       >
                         Don't have an account? Sign Up
                       </button>
@@ -463,49 +480,62 @@ export default function App() {
                   </form>
                 ) : (
                   /* Sign Up Form */
-                  <form onSubmit={handleSignupSubmit} className="space-y-4 text-xs">
+                  <form key="signup-form" id="signup-form" onSubmit={handleSignupSubmit} className="space-y-4 text-xs" autoComplete="off">
                     <div className="space-y-3">
                       <input
+                        id="signup-name"
+                        name="signup-name"
                         type="text"
                         required
                         placeholder="Your Full Name"
+                        autoComplete="off"
                         value={signupForm.name}
                         onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
-                        className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                        className="w-full glass-input px-3 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                       />
 
                       <div className="grid grid-cols-2 gap-3">
                         <input
+                          id="signup-email"
+                          name="signup-email"
                           type="email"
                           required
                           placeholder="Email Address"
+                          autoComplete="off"
                           value={signupForm.email}
                           onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full glass-input px-3 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                         />
                         <input
+                          id="signup-mobile"
+                          name="signup-mobile"
                           type="tel"
                           required
                           placeholder="Mobile (Alert Contact)"
+                          autoComplete="off"
                           value={signupForm.mobile}
                           onChange={(e) => setSignupForm({ ...signupForm, mobile: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full glass-input px-3 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                         />
                       </div>
 
                       <div className="relative">
                         <input
+                          id="signup-password"
+                          name="signup-password"
                           type={showSignupPassword ? "text" : "password"}
                           required
                           placeholder="Access Password"
+                          autoComplete="new-password"
                           value={signupForm.password}
                           onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                          className="w-full bg-white border border-stone-300 rounded-sm pl-3 pr-10 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                          className="w-full glass-input pl-3 pr-10 py-2.5 text-xs text-slate-850 placeholder-slate-400"
                         />
                         <button
+                          id="toggle-signup-password-btn"
                           type="button"
                           onClick={() => setShowSignupPassword(!showSignupPassword)}
-                          className="absolute right-3 top-2 text-stone-400 hover:text-stone-700 cursor-pointer flex items-center h-full"
+                          className="absolute right-3 top-2 text-slate-400 hover:text-slate-700 cursor-pointer flex items-center h-full"
                           title={showSignupPassword ? "Hide password" : "Show password"}
                         >
                           {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -513,29 +543,34 @@ export default function App() {
                       </div>
 
                       <div>
-                        <label className="block text-stone-500 font-mono text-[10px] uppercase mb-1.5 font-bold tracking-wider">Apply as role:</label>
+                        <label className="block text-slate-500 font-mono text-[10px] uppercase mb-1.5 font-bold tracking-wider">Apply as role:</label>
                         <select
+                          id="signup-role"
+                          name="signup-role"
                           value={signupForm.role}
                           onChange={(e) => setSignupForm({ ...signupForm, role: e.target.value as any })}
-                          className="w-full bg-white border border-stone-300 rounded-sm p-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                          className="w-full glass-input p-2.5 text-xs text-slate-800"
                         >
-                          <option value="applicant">Candidate / Job Seeker</option>
-                          <option value="recruiter">Manufacturing Recruiter</option>
+                          <option value="applicant" className="bg-white text-slate-800">Candidate / Job Seeker</option>
+                          <option value="recruiter" className="bg-white text-slate-800">Manufacturing Recruiter</option>
                         </select>
                       </div>
 
                       {signupForm.role === "recruiter" && (
-                        <div className="bg-stone-50 p-3 rounded-sm border border-stone-200 space-y-3">
-                          <span className="text-[9px] text-stone-500 font-mono font-bold uppercase tracking-wider block">Company Information (Moderated)</span>
+                        <div className="bg-slate-50/55 p-3 rounded-xl border border-slate-200 space-y-3 backdrop-blur-md">
+                          <span className="text-[9px] text-cyan-600 font-mono font-bold uppercase tracking-wider block">Company Information (Moderated)</span>
                           <input
+                            id="signup-company"
+                            name="signup-company"
                             type="text"
                             required
                             placeholder="Plant Company Name (e.g. Cosmo Films)"
+                            autoComplete="off"
                             value={signupForm.companyName}
                             onChange={(e) => setSignupForm({ ...signupForm, companyName: e.target.value })}
-                            className="w-full bg-white border border-stone-300 rounded px-2.5 py-1.5 text-xs focus:outline-none text-stone-900 placeholder-stone-400"
+                            className="w-full glass-input px-3 py-2 text-xs text-slate-800"
                           />
-                          <p className="text-[10px] text-stone-500 font-serif leading-relaxed italic">
+                          <p className="text-[10px] text-slate-500 leading-relaxed italic">
                             ℹ Note: Recruiter accounts remain inactive until manually approved by the alliance Administrator.
                           </p>
                         </div>
@@ -543,18 +578,34 @@ export default function App() {
                     </div>
 
                     <button
+                      id="signup-submit-btn"
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-stone-900 hover:bg-stone-850 text-white font-bold py-2.5 px-4 rounded-sm flex items-center justify-center gap-1 text-xs transition font-mono uppercase tracking-widest shadow-xs cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-1.5 text-xs transition font-mono uppercase tracking-widest shadow-lg shadow-cyan-500/10 cursor-pointer active:scale-98"
                     >
                       Submit Registration
                     </button>
 
-                    <div className="text-center">
+                    <div className="text-center pt-2">
                       <button
+                        id="toggle-to-login-btn"
                         type="button"
-                        onClick={() => { setIsLoginView(true); setAuthError(null); setAuthSuccess(null); }}
-                        className="text-stone-800 hover:text-stone-950 hover:underline font-mono text-[11px] uppercase tracking-wider font-bold cursor-pointer"
+                        onClick={() => {
+                          setIsLoginView(true);
+                          setAuthError(null);
+                          setAuthSuccess(null);
+                          setLoginForm({ email: "", password: "" });
+                          setSignupForm({
+                            name: "",
+                            email: "",
+                            mobile: "",
+                            password: "",
+                            role: "applicant",
+                            companyName: "",
+                            contactPerson: ""
+                          });
+                        }}
+                        className="text-slate-500 hover:text-slate-800 hover:underline font-mono text-[11px] uppercase tracking-wider font-bold cursor-pointer transition-colors"
                       >
                         Already have an account? Log In
                       </button>
@@ -563,54 +614,54 @@ export default function App() {
                 )}
 
                 {/* Quick Login Test Credentials Box */}
-                <div className="mt-6 pt-5 border-t border-stone-200 space-y-3">
-                  <span className="text-[9px] text-stone-500 font-mono font-bold uppercase tracking-wider block">
+                <div className="mt-6 pt-5 border-t border-slate-200 space-y-3">
+                  <span className="text-[9px] text-slate-500 font-mono font-bold uppercase tracking-wider block">
                     Quick Bypass Credentials (For Testing)
                   </span>
                   
                   <div className="grid grid-cols-2 gap-2 text-[10px]">
                     <button
                       onClick={() => injectTestCredentials('applicant')}
-                      className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-400 p-2.5 rounded-sm text-left transition flex items-center justify-between shadow-xs cursor-pointer"
+                      className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-300 p-2.5 rounded-lg text-left transition flex items-center justify-between shadow-xs cursor-pointer text-slate-800"
                     >
                       <div>
-                        <p className="font-bold text-stone-800">Applicant</p>
-                        <p className="text-[9px] text-stone-500 font-mono">Ramesh Kumar</p>
+                        <p className="font-bold text-slate-900">Applicant</p>
+                        <p className="text-[9px] text-slate-500 font-mono">Ramesh Kumar</p>
                       </div>
-                      <UserIcon className="h-3.5 w-3.5 text-stone-600" />
+                      <UserIcon className="h-3.5 w-3.5 text-cyan-600 animate-pulse" />
                     </button>
 
                     <button
                       onClick={() => injectTestCredentials('recruiter_approved')}
-                      className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-400 p-2.5 rounded-sm text-left transition flex items-center justify-between shadow-xs cursor-pointer"
+                      className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-300 p-2.5 rounded-lg text-left transition flex items-center justify-between shadow-xs cursor-pointer text-slate-800"
                     >
                       <div>
-                        <p className="font-bold text-stone-800">Approved Recruiter</p>
-                        <p className="text-[9px] text-stone-500 font-mono">Uflex Limited</p>
+                        <p className="font-bold text-slate-900">Approved Recruiter</p>
+                        <p className="text-[9px] text-slate-500 font-mono">Uflex Limited</p>
                       </div>
-                      <Building className="h-3.5 w-3.5 text-stone-600" />
+                      <Building className="h-3.5 w-3.5 text-cyan-600" />
                     </button>
 
                     <button
                       onClick={() => injectTestCredentials('recruiter_pending')}
-                      className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-400 p-2.5 rounded-sm text-left transition flex items-center justify-between shadow-xs cursor-pointer"
+                      className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-300 p-2.5 rounded-lg text-left transition flex items-center justify-between shadow-xs cursor-pointer text-slate-800"
                     >
                       <div>
-                        <p className="font-bold text-stone-800">Pending Recruiter</p>
-                        <p className="text-[9px] text-stone-500 font-mono">Cosmo Films</p>
+                        <p className="font-bold text-slate-900">Pending Recruiter</p>
+                        <p className="text-[9px] text-slate-500 font-mono">Cosmo Films</p>
                       </div>
-                      <Building className="h-3.5 w-3.5 text-stone-600" />
+                      <Building className="h-3.5 w-3.5 text-cyan-600" />
                     </button>
 
                     <button
                       onClick={() => injectTestCredentials('admin')}
-                      className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-400 p-2.5 rounded-sm text-left transition flex items-center justify-between shadow-xs cursor-pointer"
+                      className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-300 p-2.5 rounded-lg text-left transition flex items-center justify-between shadow-xs cursor-pointer text-slate-800"
                     >
                       <div>
-                        <p className="font-bold text-stone-800">Administrator</p>
-                        <p className="text-[9px] text-stone-500 font-mono">Full Access Moderation</p>
+                        <p className="font-bold text-slate-900">Administrator</p>
+                        <p className="text-[9px] text-slate-500 font-mono">Full Moderation</p>
                       </div>
-                      <Shield className="h-3.5 w-3.5 text-stone-600" />
+                      <Shield className="h-3.5 w-3.5 text-purple-600" />
                     </button>
                   </div>
                 </div>

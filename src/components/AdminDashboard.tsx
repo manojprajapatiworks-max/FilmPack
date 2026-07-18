@@ -497,7 +497,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
   };
 
   // Filter lists
-  const pendingRecruiters = users.filter(u => u.role === "recruiter" && u.status === "pending_approval");
+  const pendingRecruiters = users.filter(u => (u.role === "recruiter" || u.role === "applicant") && u.status === "pending_approval");
 
   const filteredUsers = users.filter(u => {
     // Exclude Admin themselves from moderation editing to prevent accidental self lockouts
@@ -519,64 +519,64 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
   });
 
   return (
-    <div className="min-h-screen bg-[#FCFAF6] text-stone-900 font-sans pb-12">
+    <div className="min-h-screen bg-transparent text-slate-800 font-sans pb-12">
       {/* Admin Tab Header */}
-      <div className="bg-white border-b border-stone-200 shadow-xs">
+      <div className="bg-white/40 border-b border-slate-200/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-4 sm:space-x-8 h-14 items-center overflow-x-auto">
             <button
               onClick={() => setActiveSection("stats")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeSection === "stats" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap ${
+                activeSection === "stats" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Overview Insights
             </button>
             <button
               onClick={() => setActiveSection("pending_approvals")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold relative whitespace-nowrap ${
-                activeSection === "pending_approvals" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold relative whitespace-nowrap ${
+                activeSection === "pending_approvals" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Approvals Queue
               {pendingRecruiters.length > 0 && (
-                <span className="ml-1.5 bg-stone-900 text-white font-mono rounded-sm h-4 w-4 text-[9px] inline-flex items-center justify-center font-bold">
+                <span className="ml-1.5 bg-cyan-50 border border-cyan-200 text-cyan-600 font-mono rounded-sm h-4 w-4 text-[9px] inline-flex items-center justify-center font-bold">
                   {pendingRecruiters.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveSection("user_management")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeSection === "user_management" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap ${
+                activeSection === "user_management" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               User Directory
             </button>
             <button
               onClick={() => setActiveSection("job_management")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap ${
-                activeSection === "job_management" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap ${
+                activeSection === "job_management" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Master Job Audits
             </button>
             <button
               onClick={() => setActiveSection("site_config")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
-                activeSection === "site_config" ? "border-amber-600 text-amber-900 border-b-2" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
+                activeSection === "site_config" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Sliders className="h-3.5 w-3.5 text-amber-600" />
+              <Sliders className="h-3.5 w-3.5 text-cyan-600" />
               Website Editor
             </button>
             <button
               onClick={() => setActiveSection("gazette_moderation")}
-              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
-                activeSection === "gazette_moderation" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
+                activeSection === "gazette_moderation" ? "border-cyan-500 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Newspaper className="h-3.5 w-3.5 text-stone-700" />
+              <Newspaper className="h-3.5 w-3.5 text-cyan-600" />
               Gazette Moderation
             </button>
           </div>
@@ -798,8 +798,8 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
               <div>
-                <h2 className="text-3xl font-bold tracking-tight text-stone-900 font-serif">Pending Recruiters</h2>
-                <p className="text-xs text-stone-500 font-serif italic mt-1">Review film packaging company recruiters before authorizing platform credentials.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-stone-900 font-serif">Pending Approvals</h2>
+                <p className="text-xs text-stone-500 font-serif italic mt-1">Review film packaging recruiters and applicant registrations before authorizing platform credentials.</p>
               </div>
 
               {selectedRecruiterIds.length > 0 && (
@@ -816,7 +816,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
             {pendingRecruiters.length === 0 ? (
               <div className="text-center py-24 border border-stone-200 bg-white rounded-sm shadow-xs">
                 <CheckCircle className="h-10 w-10 text-stone-400 mx-auto mb-2" />
-                <p className="text-sm text-stone-600 font-serif italic">All pending recruiter requests have been cleared.</p>
+                <p className="text-sm text-stone-600 font-serif italic">All pending registration requests have been cleared.</p>
               </div>
             ) : (
               <div className="bg-white border border-stone-200 rounded-sm overflow-hidden shadow-xs">
@@ -824,7 +824,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                   <thead className="bg-stone-50 text-stone-500 font-mono uppercase text-[9px] tracking-wider border-b border-stone-200">
                     <tr>
                       <th className="p-4 w-12 text-center">Select</th>
-                      <th className="p-4">Contact Representative</th>
+                      <th className="p-4">User Name & Role</th>
                       <th className="p-4">Company Details</th>
                       <th className="p-4">Contact Phone</th>
                       <th className="p-4">Email</th>
@@ -842,7 +842,14 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                             className="h-3.5 w-3.5 rounded-sm border-stone-300 text-stone-900 focus:ring-0"
                           />
                         </td>
-                        <td className="p-4 font-bold text-stone-900 font-serif">{rec.name}</td>
+                        <td className="p-4">
+                          <p className="font-bold text-stone-900 font-serif">{rec.name}</p>
+                          <span className={`inline-block text-[10px] font-mono px-1.5 py-0.5 rounded-sm mt-1 font-bold ${
+                            rec.role === "recruiter" ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-blue-100 text-blue-800 border border-blue-200"
+                          }`}>
+                            {rec.role === "recruiter" ? "RECRUITER" : "APPLICANT"}
+                          </span>
+                        </td>
                         <td className="p-4">
                           <p className="font-bold text-stone-950">{rec.companyDetails?.companyName || "N/A"}</p>
                           <p className="text-[10px] text-stone-500 font-serif italic mt-0.5">Submitted: {new Date(rec.createdDate).toLocaleDateString()}</p>
@@ -854,14 +861,14 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                             <button
                               onClick={() => handleUserStatusChange(rec.id, "approved")}
                               className="bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 p-1.5 rounded-sm transition cursor-pointer"
-                              title="Approve Recruiter"
+                              title="Approve User"
                             >
                               <Check className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleUserStatusChange(rec.id, "rejected")}
                               className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 p-1.5 rounded-sm transition cursor-pointer"
-                              title="Reject Recruiter"
+                              title="Reject User"
                             >
                               <X className="h-4 w-4" />
                             </button>
@@ -1744,7 +1751,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
 
         {/* GAZETTE MODERATION VIEW */}
         {activeSection === "gazette_moderation" && (
-          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+          <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md">
             <AllianceGazette currentUser={currentUser} isAdminView={true} />
           </div>
         )}

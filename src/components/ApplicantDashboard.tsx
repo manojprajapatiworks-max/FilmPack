@@ -273,39 +273,39 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
   const openJobsCount = jobs.filter(j => j.status === "open").length;
 
   return (
-    <div className="min-h-screen bg-[#FCFAF6] text-stone-900 font-sans pb-12">
+    <div className="min-h-screen bg-transparent text-slate-800 font-sans pb-12">
       {/* Tab Selectors */}
-      <div className="bg-[#F5F2EB] border-b border-stone-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-4 sm:space-x-6 h-12 items-center overflow-x-auto">
+      <div className="bg-white/70 border-b border-slate-200/60 backdrop-blur-md rounded-xl shadow-xs">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex space-x-4 sm:space-x-6 h-14 items-center overflow-x-auto">
             <button
               onClick={() => { setActiveSection("find_jobs"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
-                activeSection === "find_jobs" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer whitespace-nowrap ${
+                activeSection === "find_jobs" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Search Film Jobs ({openJobsCount})
             </button>
             <button
               onClick={() => { setActiveSection("my_applications"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
-                activeSection === "my_applications" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer whitespace-nowrap ${
+                activeSection === "my_applications" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               My Applied Jobs ({applications.length})
             </button>
             <button
               onClick={() => { setActiveSection("profile"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
-                activeSection === "profile" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer whitespace-nowrap ${
+                activeSection === "profile" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Resume Profile Defaults
             </button>
             <button
               onClick={() => { setActiveSection("gazette"); setIsApplying(false); setSelectedJob(null); }}
-              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition cursor-pointer whitespace-nowrap ${
-                activeSection === "gazette" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-900"
+              className={`text-xs font-mono font-bold uppercase tracking-widest h-full border-b-2 px-1 transition py-4 cursor-pointer whitespace-nowrap ${
+                activeSection === "gazette" ? "border-cyan-600 text-cyan-600" : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               Alliance Gazette 📰
@@ -314,14 +314,14 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <main className="max-w-7xl mx-auto mt-8">
         {actionMessage && (
-          <div className="mb-6 bg-stone-900 text-amber-400 p-4 rounded-md shadow-md border border-amber-500/30 flex items-center justify-between font-mono text-xs">
+          <div className="mb-6 bg-white border border-cyan-200 text-cyan-800 p-4 rounded-xl shadow-md flex items-center justify-between font-mono text-xs backdrop-blur-md">
             <span className="flex items-center gap-2 font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block animate-pulse"></span>
               {actionMessage}
             </span>
-            <button onClick={() => setActionMessage(null)} className="text-stone-400 hover:text-white font-bold">✕</button>
+            <button onClick={() => setActionMessage(null)} className="text-slate-400 hover:text-slate-755 font-bold cursor-pointer">✕</button>
           </div>
         )}
 
@@ -329,28 +329,28 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
         {activeSection === "find_jobs" && !isApplying && (
           <div>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-stone-900 tracking-tight editorial-title flex items-center gap-3 flex-wrap">
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3 flex-wrap font-serif">
                 <span>Flexible Packaging Vacancies</span>
-                <span className="text-xs bg-stone-900 text-white px-3 py-1 rounded-sm font-mono font-bold tracking-wider shadow-2xs">
+                <span className="text-xs bg-cyan-50 border border-cyan-200 text-cyan-700 px-3 py-1 rounded-full font-mono font-bold tracking-wider shadow-xs">
                   {openJobsCount} Total Vacancies Open
                 </span>
               </h2>
-              <p className="text-xs text-stone-500 font-serif italic mt-1">Search active jobs across co-extrusion, gravure, QC lab testing, and maintenance operators.</p>
+              <p className="text-xs text-slate-500 mt-1 italic">Search active jobs across co-extrusion, gravure, QC lab testing, and maintenance operators.</p>
             </div>
 
             {!isProfileSaved && (
-              <div className="mb-6 bg-amber-50 border-2 border-amber-400 p-4 rounded-sm flex items-center justify-between gap-3 shadow-xs">
+              <div className="mb-6 bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between gap-3 shadow-xs backdrop-blur-md">
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
+                  <AlertCircle className="h-6 w-6 text-amber-500 shrink-0" />
                   <div>
-                    <h4 className="font-bold text-amber-900 font-serif text-sm">Action Required: Complete Resume Profile Defaults</h4>
-                    <p className="text-xs text-amber-800 font-sans mt-0.5">You must complete and save your Resume Profile Defaults before submitting job applications.</p>
+                    <h4 className="font-bold text-amber-800 font-serif text-sm">Action Required: Complete Resume Profile Defaults</h4>
+                    <p className="text-xs text-amber-700 font-sans mt-0.5">You must complete and save your Resume Profile Defaults before submitting job applications.</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => { setIsApplying(false); setSelectedJob(null); setActiveSection("profile"); }}
-                  className="bg-amber-900 hover:bg-amber-800 text-white text-xs font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-sm shadow-2xs whitespace-nowrap cursor-pointer"
+                  className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-lg shadow transition cursor-pointer"
                 >
                   Complete Profile →
                 </button>
@@ -358,17 +358,17 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
             )}
 
             {/* Filter Panel */}
-            <div className="bg-white border border-stone-200 rounded-sm p-4 mb-6 shadow-xs">
+            <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-4 mb-6 shadow-xl backdrop-blur-md">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Search Term */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-cyan-400/70" />
                   <input
                     type="text"
                     placeholder="Search keywords, title, company..."
                     value={searchTitle}
                     onChange={(e) => setSearchTitle(e.target.value)}
-                    className="w-full bg-white border border-stone-300 rounded-sm pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                    className="w-full bg-gray-950/50 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-gray-500"
                   />
                 </div>
 
@@ -377,11 +377,11 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
                   <select
                     value={filterDepartment}
                     onChange={(e) => setFilterDepartment(e.target.value)}
-                    className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900"
+                    className="w-full bg-gray-950/50 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 text-white"
                   >
-                    <option value="">All Film Roles / Categories</option>
+                    <option value="" className="bg-gray-900 text-white">All Film Roles / Categories</option>
                     {filmCategories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat} value={cat} className="bg-gray-900 text-white">{cat}</option>
                     ))}
                   </select>
                 </div>
@@ -393,7 +393,7 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
                     placeholder="Filter by Location (e.g. Noida)"
                     value={filterLocation}
                     onChange={(e) => setFilterLocation(e.target.value)}
-                    className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                    className="w-full bg-gray-950/50 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 text-white placeholder-gray-500"
                   />
                 </div>
 
@@ -404,7 +404,7 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
                     placeholder="Experience (e.g. 3 Years)"
                     value={filterExperience}
                     onChange={(e) => setFilterExperience(e.target.value)}
-                    className="w-full bg-white border border-stone-300 rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-900 placeholder-stone-400"
+                    className="w-full bg-gray-950/50 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 text-white placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -412,17 +412,17 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
 
             {/* Job Board Grid */}
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 text-stone-400">
-                <RefreshCw className="h-8 w-8 text-stone-850 animate-spin mb-3" />
+              <div className="flex flex-col items-center justify-center py-24 text-gray-400">
+                <RefreshCw className="h-8 w-8 text-cyan-400 animate-spin mb-3" />
                 <p className="text-xs font-mono uppercase tracking-wider">Loading active openings...</p>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="text-center py-20 border border-stone-200 rounded-sm bg-white/50">
-                <AlertCircle className="h-10 w-10 text-stone-400 mx-auto mb-2" />
-                <p className="text-sm text-stone-600 font-serif italic">No vacancies match your active search filters.</p>
+              <div className="text-center py-20 border border-white/10 rounded-2xl bg-gray-900/40 backdrop-blur-md">
+                <AlertCircle className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                <p className="text-sm text-gray-300 font-serif italic">No vacancies match your active search filters.</p>
                 <button 
                   onClick={() => { setSearchTitle(""); setFilterDepartment(""); setFilterLocation(""); setFilterExperience(""); }}
-                  className="mt-3 text-xs bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 hover:border-stone-400 px-3 py-1.5 rounded-sm font-mono uppercase tracking-wider transition cursor-pointer"
+                  className="mt-4 text-xs bg-gray-900 hover:bg-gray-850 text-white border border-white/10 hover:border-cyan-500/30 px-4 py-2 rounded-lg font-mono uppercase tracking-wider transition cursor-pointer"
                 >
                   Reset Search Criteria
                 </button>
@@ -430,50 +430,50 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {filteredJobs.map(job => (
-                  <div key={job.id} className="bg-white border border-stone-200 rounded-sm p-5 shadow-xs flex flex-col justify-between hover:border-stone-400 transition-all duration-200">
+                  <div key={job.id} className="bg-gray-900/65 border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-cyan-500/40 hover:shadow-cyan-500/10 hover:shadow-2xl transition-all duration-300 backdrop-blur-md">
                     <div>
                       <div className="flex justify-between items-start gap-2 mb-3">
                         <div>
-                          <h3 className="font-bold text-base text-stone-900 font-serif">{job.title}</h3>
-                          <p className="text-xs text-stone-600 font-serif italic mt-0.5">{job.companyName}</p>
+                          <h3 className="font-bold text-base text-white font-serif">{job.title}</h3>
+                          <p className="text-xs text-gray-400 font-serif italic mt-0.5">{job.companyName}</p>
                         </div>
-                        <span className="text-[9px] bg-stone-100 text-stone-800 font-mono font-semibold px-2.5 py-1 rounded-sm border border-stone-200 uppercase tracking-wider">
+                        <span className="text-[9px] bg-cyan-950/60 text-cyan-400 font-mono font-semibold px-2.5 py-1 rounded-full border border-cyan-500/20 uppercase tracking-wider">
                           {job.department}
                         </span>
                       </div>
 
                       {/* Info Pills */}
-                      <div className="grid grid-cols-2 gap-3 text-xs text-stone-600 font-medium mb-4 pb-4 border-b border-stone-150">
+                      <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 font-medium mb-4 pb-4 border-b border-white/5">
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-stone-400" />
+                          <MapPin className="h-4 w-4 text-cyan-400/80" />
                           <span>{job.location}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Award className="h-4 w-4 text-stone-400" />
+                          <Award className="h-4 w-4 text-cyan-400/80" />
                           <span>Exp: {job.experience}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <IndianRupee className="h-4 w-4 text-stone-400" />
+                          <IndianRupee className="h-4 w-4 text-cyan-400/80" />
                           <span>{job.salary}</span>
                         </div>
                         <div className="flex items-center gap-2 col-span-1">
-                          <Calendar className="h-4 w-4 text-red-700" />
-                          <span className="text-red-800 font-mono text-[11px]">Apply before: {job.deadline}</span>
+                          <Calendar className="h-4 w-4 text-purple-400" />
+                          <span className="text-purple-300 font-mono text-[11px]">Apply before: {job.deadline}</span>
                         </div>
                       </div>
 
                       {/* Description summary */}
-                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3 mb-4 font-serif">
+                      <p className="text-xs text-gray-300 leading-relaxed line-clamp-3 mb-4 font-serif">
                         {job.description}
                       </p>
 
                       {/* Required Skills Required Tags */}
                       {job.skillsRequired && job.skillsRequired.length > 0 && (
                         <div className="mb-5">
-                          <p className="text-[9px] text-stone-500 font-mono font-bold uppercase tracking-wider mb-1.5">Target Process Skills:</p>
+                          <p className="text-[9px] text-gray-400 font-mono font-bold uppercase tracking-wider mb-1.5">Target Process Skills:</p>
                           <div className="flex flex-wrap gap-1.5">
                             {job.skillsRequired.map(skill => (
-                              <span key={skill} className="text-[9px] bg-stone-50 text-stone-800 px-2 py-0.5 rounded-sm border border-stone-200 uppercase tracking-widest font-mono font-medium">
+                              <span key={skill} className="text-[9px] bg-gray-950/60 text-cyan-400 px-2 py-0.5 rounded-lg border border-cyan-500/20 uppercase tracking-widest font-mono font-medium">
                                 {skill}
                               </span>
                             ))}
@@ -485,12 +485,12 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => openApplyForm(job)}
-                        className="flex-1 text-center bg-stone-900 hover:bg-stone-850 text-white font-mono font-bold text-xs uppercase tracking-widest py-2.5 rounded-sm shadow-xs transition cursor-pointer"
+                        className="flex-1 text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono font-bold text-xs uppercase tracking-widest py-2.5 rounded-lg shadow-lg shadow-cyan-500/10 transition active:scale-98 cursor-pointer"
                       >
                         Apply for Job
                       </button>
                       {!isProfileSaved && (
-                        <span className="text-[10px] font-mono text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-sm font-bold flex items-center gap-1" title="Complete Resume Profile Defaults first">
+                        <span className="text-[10px] font-mono text-amber-400 bg-amber-950/60 border border-amber-500/20 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1" title="Complete Resume Profile Defaults first">
                           <AlertCircle className="h-3 w-3" /> Profile Req.
                         </span>
                       )}
@@ -1192,7 +1192,7 @@ export default function ApplicantDashboard({ currentUser, siteConfig }: Applican
 
         {/* GAZETTE NEWS FEED VIEW */}
         {activeSection === "gazette" && (
-          <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-sm">
+          <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md">
             <AllianceGazette currentUser={currentUser} />
           </div>
         )}
