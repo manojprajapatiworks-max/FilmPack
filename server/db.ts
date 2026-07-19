@@ -159,6 +159,33 @@ export interface SiteConfig {
     linkedin: string;
     line?: string;
   };
+  stats?: {
+    plantsLiveValue?: string;
+    plantsLiveLabel?: string;
+    lineSpeedValue?: string;
+    lineSpeedLabel?: string;
+    certifiedValue?: string;
+    certifiedLabel?: string;
+    maxSalaryValue?: string;
+    maxSalaryLabel?: string;
+  };
+  pillarsTitle?: string;
+  pillarsSubtitle?: string;
+  pillars?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    minExp: string;
+    tag: string;
+    icon: string;
+  }>;
+  confidentialAttachments?: Array<{
+    id: string;
+    title: string;
+    type: 'link' | 'text' | 'image';
+    content: string;
+    dateAdded: string;
+  }>;
   jobCategories?: string[];
   showcaseImages: ShowcaseImage[];
   tickerItems: TickerItem[];
@@ -260,7 +287,54 @@ export const INITIAL_SITE_CONFIG: SiteConfig = {
     { id: "tck_3", text: "LINE #3 (Multi-layer CPP Barrier Film):", highlight: "ACTIVE EXTRUSION • QC Chemist Walk-ins Open", color: "text-sky-400" },
     { id: "tck_4", text: "ALLIANCE AUDIT:", highlight: "ISO 9001:2015 & BRCGS Certified • Top Packaging Employer India", color: "text-purple-400" },
     { id: "tck_5", text: "ROLLS DISPATCHED TODAY:", highlight: "1,420 MT across Gujarat, Maharashtra & Daman Plants", color: "text-emerald-400" }
-  ]
+  ],
+  stats: {
+    plantsLiveValue: "14+",
+    plantsLiveLabel: "Plants Live",
+    lineSpeedValue: "480m",
+    lineSpeedLabel: "Line Speed",
+    certifiedValue: "100%",
+    certifiedLabel: "Certified",
+    maxSalaryValue: "₹45k",
+    maxSalaryLabel: "Max Salary"
+  },
+  pillarsTitle: "The Pillars of Flexible Packaging Production",
+  pillarsSubtitle: "Every bag, wrapper, and pouch on store shelves is engineered by a specialized team of technical operators. Access career pathways for the following four plant pillars:",
+  pillars: [
+    {
+      id: "pil_1",
+      title: "Extrusion Line Operator",
+      description: "Manages high-throughput, multi-million dollar cast & bubble lines. Configures motor RPM, die lips, air rings, draft ratios, and chilling rollers for continuous production.",
+      minExp: "1-2 Yrs",
+      tag: "Extrusion",
+      icon: "Cpu"
+    },
+    {
+      id: "pil_2",
+      title: "Quality Control & Lab Analyst",
+      description: "Evaluates film specs. Tests oxygen transmission (OTR), dynamic/static coefficient of friction (COF), seal strength limits, haze levels, and inline dyne levels.",
+      minExp: "ITI/B.Sc",
+      tag: "Lab Analysis",
+      icon: "Activity"
+    },
+    {
+      id: "pil_3",
+      title: "Lamination Engineer",
+      description: "Commands solventless & solvent-based laminators. Controls adhesive mixing ratios, drying tunnel temperatures, curing chamber durations, and prevents visual curling.",
+      minExp: "3+ Yrs",
+      tag: "Lamination",
+      icon: "Layers"
+    },
+    {
+      id: "pil_4",
+      title: "Slitting & Rewinding Master",
+      description: "Manages high-speed razor and shear slitting machines. Minimizes edge trim waste, eliminates static charges, prevents roll wrinkles, and maximizes core tightness.",
+      minExp: "Diploma",
+      tag: "Slitting Desk",
+      icon: "Film"
+    }
+  ],
+  confidentialAttachments: []
 };
 
 export interface DatabaseSchema {

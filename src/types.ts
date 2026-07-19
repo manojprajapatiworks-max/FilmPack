@@ -143,6 +143,33 @@ export interface SiteConfig {
     linkedin: string;
     line?: string;
   };
+  stats?: {
+    plantsLiveValue?: string;
+    plantsLiveLabel?: string;
+    lineSpeedValue?: string;
+    lineSpeedLabel?: string;
+    certifiedValue?: string;
+    certifiedLabel?: string;
+    maxSalaryValue?: string;
+    maxSalaryLabel?: string;
+  };
+  pillarsTitle?: string;
+  pillarsSubtitle?: string;
+  pillars?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    minExp: string;
+    tag: string;
+    icon: string;
+  }>;
+  confidentialAttachments?: Array<{
+    id: string;
+    title: string;
+    type: 'link' | 'text' | 'image';
+    content: string;
+    dateAdded: string;
+  }>;
   jobCategories?: string[];
   showcaseImages: ShowcaseImage[];
   tickerItems: TickerItem[];

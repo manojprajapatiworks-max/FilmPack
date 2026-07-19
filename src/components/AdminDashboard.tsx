@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User, Job, Application, AdminStats, SiteConfig, ShowcaseImage, TickerItem } from "../types";
-import { Shield, Users, Briefcase, CheckCircle, Clock, AlertTriangle, Check, X, Search, Edit, Trash2, Key, RefreshCw, Plus, Download, Eye, FileText, Ban, Sliders, Globe, Link as LinkIcon, Image, Activity, Save, Newspaper } from "lucide-react";
+import { Shield, Users, Briefcase, CheckCircle, Clock, AlertTriangle, Check, X, Search, Edit, Trash2, Key, RefreshCw, Plus, Download, Eye, FileText, Ban, Sliders, Globe, Link as LinkIcon, Image, Activity, Save, Newspaper, Lock } from "lucide-react";
 import AllianceGazette from "./AllianceGazette";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
@@ -66,6 +66,91 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
   const [newJobCat, setNewJobCat] = useState("");
   const [selectedApplicantProfile, setSelectedApplicantProfile] = useState<User | null>(null);
 
+  // States for Admin Job Posting / Editing
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [jobForm, setJobForm] = useState({
+    title: "",
+    companyName: "",
+    location: "",
+    department: "Extrusion Operator",
+    experience: "1-2 Years",
+    education: "Diploma / B.Sc / B.Tech",
+    salary: "Negotiable",
+    description: "",
+    vacancies: "1",
+    deadline: "",
+    skillsRequired: ""
+  });
+
+  const openPostJobModal = (job?: Job) => {
+    if (job) {
+      setEditingJob(job);
+      setJobForm({
+        title: job.title,
+        companyName: job.companyName,
+        location: job.location,
+        department: job.department,
+        experience: job.experience || "1-2 Years",
+        education: job.education || "Diploma / Graduate",
+        salary: job.salary || "Negotiable",
+        description: job.description || "",
+        vacancies: String(job.vacancies || 1),
+        deadline: job.deadline ? job.deadline.split("T")[0] : "",
+        skillsRequired: (job.skillsRequired || []).join(", ")
+      });
+    } else {
+      setEditingJob(null);
+      setJobForm({
+        title: "",
+        companyName: "",
+        location: "",
+        department: "Extrusion Operator",
+        experience: "1-2 Years",
+        education: "Diploma / B.Sc / B.Tech",
+        salary: "Negotiable",
+        description: "",
+        vacancies: "1",
+        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        skillsRequired: "Extrusion, BOPP, Quality Control"
+      });
+    }
+    setIsJobModalOpen(true);
+  };
+
+  const handleJobSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...jobForm,
+        vacancies: Number(jobForm.vacancies) || 1,
+        skillsRequired: jobForm.skillsRequired.split(",").map(s => s.trim()).filter(Boolean),
+        recruiterId: "admin"
+      };
+
+      const url = editingJob ? `/api/jobs/${editingJob.id}` : "/api/jobs";
+      const method = editingJob ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showNotice(editingJob ? "Job post updated successfully" : "New dynamic vacancy posted successfully by Admin");
+        setIsJobModalOpen(false);
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        showNotice(err.error || "Failed to save job post");
+      }
+    } catch (err) {
+      console.error(err);
+      showNotice("Network error while saving job");
+    }
+  };
+
   useEffect(() => {
     if (propsSiteConfig) {
       setSiteConfig(prev => ({ ...prev, ...propsSiteConfig }));
@@ -73,7 +158,7 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
   }, [propsSiteConfig]);
 
   // Active view
-  const [activeSection, setActiveSection] = useState<"stats" | "pending_approvals" | "user_management" | "job_management" | "site_config" | "gazette_moderation">("stats");
+  const [activeSection, setActiveSection] = useState<"stats" | "pending_approvals" | "user_management" | "job_management" | "site_config" | "gazette_moderation" | "confidential_vault">("stats");
 
   // Selection state for multi-approve recruiters
   const [selectedRecruiterIds, setSelectedRecruiterIds] = useState<string[]>([]);
@@ -101,6 +186,76 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
     password: "",
     companyName: ""
   });
+
+  const [newConfForm, setNewConfForm] = useState({
+    title: "",
+    type: "link" as "link" | "text" | "image",
+    content: ""
+  });
+
+  const handleAddConfidential = async () => {
+    if (!newConfForm.title.trim() || !newConfForm.content.trim()) {
+      showNotice("Please fill in both the title and content fields.");
+      return;
+    }
+    const updatedAttachments = [
+      ...(siteConfig.confidentialAttachments || []),
+      {
+        id: `conf_${Date.now()}`,
+        title: newConfForm.title,
+        type: newConfForm.type,
+        content: newConfForm.content,
+        dateAdded: new Date().toLocaleDateString()
+      }
+    ];
+
+    const updatedConfig = {
+      ...siteConfig,
+      confidentialAttachments: updatedAttachments
+    };
+
+    setSiteConfig(updatedConfig);
+    setNewConfForm({ title: "", type: "link", content: "" });
+
+    try {
+      const res = await fetch("/api/admin/site-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedConfig)
+      });
+      if (res.ok) {
+        showNotice("Confidential document successfully encrypted and added to vault!");
+      } else {
+        showNotice("Failed to save changes to secure database.");
+      }
+    } catch (err) {
+      console.error(err);
+      showNotice("Error saving confidential attachment.");
+    }
+  };
+
+  const handleRemoveConfidential = async (id: string) => {
+    const updatedAttachments = (siteConfig.confidentialAttachments || []).filter(a => a.id !== id);
+    const updatedConfig = {
+      ...siteConfig,
+      confidentialAttachments: updatedAttachments
+    };
+
+    setSiteConfig(updatedConfig);
+
+    try {
+      const res = await fetch("/api/admin/site-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedConfig)
+      });
+      if (res.ok) {
+        showNotice("Document removed from Confidential Vault.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Search/Filters states
   const [searchUserQuery, setSearchUserQuery] = useState("");
@@ -142,11 +297,33 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
           ...img,
           specs: Array.isArray(img.specs) ? img.specs.join(" • ") : (img.specs || "")
         }));
+        const statsObj = data?.stats || {
+          plantsLiveValue: "14+",
+          plantsLiveLabel: "PLANTS LIVE",
+          lineSpeedValue: "480+",
+          lineSpeedLabel: "MAX LINE SPEED",
+          certifiedValue: "100%",
+          certifiedLabel: "ALLIANCE CERTIFIED",
+          maxSalaryValue: "₹18L+",
+          maxSalaryLabel: "MAX SALARY DRAWN"
+        };
+        const pillarsArray = data?.pillars || [
+          { id: "pil_1", title: "Global Opportunities", description: "BOPP, BOPET & Cast Line vacancies spanning continents, from Germany to India.", minExp: "1-2 Years", tag: "ALLIANCE", icon: "Globe" },
+          { id: "pil_2", title: "Direct Plant Verification", description: "All slitter, laminator, and printing operator profiles vetted directly by plant HR.", minExp: "ITI/Diploma", tag: "VERIFIED", icon: "Shield" },
+          { id: "pil_3", title: "Premium Compensation", description: "Secure wages matching top-tier plastic packaging manufacturers globally.", minExp: "Competitive", tag: "TOP-SCALE", icon: "Briefcase" }
+        ];
+        const confidentialAttachmentsArray = data?.confidentialAttachments || [];
+
         setSiteConfig({
           ...data,
           socialLinks,
           jobCategories,
           showcaseImages,
+          stats: statsObj,
+          pillarsTitle: data?.pillarsTitle || "The Pillars of Flexible Packaging Production",
+          pillarsSubtitle: data?.pillarsSubtitle || "Bridging technical operators with high-throughput plants around the country.",
+          pillars: pillarsArray,
+          confidentialAttachments: confidentialAttachmentsArray,
           footer: {
             ...data?.footer,
             socialLinks,
@@ -377,6 +554,44 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
     }
   };
 
+  const handleStatChange = (key: string, value: string) => {
+    setSiteConfig(prev => ({
+      ...prev,
+      stats: {
+        ...(prev.stats || {
+          plantsLiveValue: "14+",
+          plantsLiveLabel: "PLANTS LIVE",
+          lineSpeedValue: "480+",
+          lineSpeedLabel: "MAX LINE SPEED",
+          certifiedValue: "100%",
+          certifiedLabel: "ALLIANCE CERTIFIED",
+          maxSalaryValue: "₹18L+",
+          maxSalaryLabel: "MAX SALARY DRAWN"
+        }),
+        [key]: value
+      }
+    }));
+  };
+
+  const handlePillarChange = (idx: number, key: string, value: string) => {
+    setSiteConfig(prev => {
+      const updatedPillars = [...(prev.pillars || [
+        { id: "pil_1", title: "Global Opportunities", description: "BOPP, BOPET & Cast Line vacancies spanning continents, from Germany to India.", minExp: "1-2 Years", tag: "ALLIANCE", icon: "Globe" },
+        { id: "pil_2", title: "Direct Plant Verification", description: "All slitter, laminator, and printing operator profiles vetted directly by plant HR.", minExp: "ITI/Diploma", tag: "VERIFIED", icon: "Shield" },
+        { id: "pil_3", title: "Premium Compensation", description: "Secure wages matching top-tier plastic packaging manufacturers globally.", minExp: "Competitive", tag: "TOP-SCALE", icon: "Briefcase" }
+      ])];
+      if (!updatedPillars[idx]) return prev;
+      updatedPillars[idx] = {
+        ...updatedPillars[idx],
+        [key]: value
+      };
+      return {
+        ...prev,
+        pillars: updatedPillars
+      };
+    });
+  };
+
   const handleSaveSiteConfig = async () => {
     if (!siteConfig) return;
     setIsSavingConfig(true);
@@ -578,6 +793,15 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
             >
               <Newspaper className="h-3.5 w-3.5 text-cyan-600" />
               Gazette Moderation
+            </button>
+            <button
+              onClick={() => setActiveSection("confidential_vault")}
+              className={`text-xs font-mono uppercase tracking-widest h-full border-b-2 px-1 transition py-4.5 cursor-pointer font-bold whitespace-nowrap flex items-center gap-1.5 ${
+                activeSection === "confidential_vault" ? "border-red-500 text-red-600" : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <Lock className="h-3.5 w-3.5 text-red-600 animate-pulse" />
+              Confidential Vault
             </button>
           </div>
         </div>
@@ -1093,14 +1317,24 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                 <p className="text-xs text-stone-500 font-serif italic mt-1">Audit active vacancies, close postings immediately, or erase outdated postings.</p>
               </div>
 
-              <button
-                onClick={exportJobsCSV}
-                className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-5 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
-                title="Export complete list of job openings with hiring status and comments"
-              >
-                <Download className="h-4 w-4 text-emerald-400" />
-                Export Jobs List CSV
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={exportJobsCSV}
+                  className="bg-white hover:bg-stone-50 border border-stone-300 text-stone-850 font-mono uppercase tracking-widest text-xs py-2.5 px-5 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                  title="Export complete list of job openings with hiring status and comments"
+                >
+                  <Download className="h-4 w-4 text-emerald-400" />
+                  Export Jobs List CSV
+                </button>
+                <button
+                  onClick={() => openPostJobModal()}
+                  className="bg-stone-900 hover:bg-stone-850 text-white font-mono uppercase tracking-widest text-xs py-2.5 px-6 rounded-sm shadow-xs transition flex items-center gap-1.5 font-bold cursor-pointer"
+                  title="Create a new dynamic job vacancy listing with company name and parameters"
+                >
+                  <Plus className="h-4 w-4 text-amber-400" />
+                  Post Job Vacancy
+                </button>
+              </div>
             </div>
 
             <div className="bg-white border border-stone-200 rounded-sm p-4 shadow-xs">
@@ -1149,6 +1383,12 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                       </div>
 
                       <div className="flex items-center gap-2 min-w-[120px]">
+                        <button
+                          onClick={() => openPostJobModal(job)}
+                          className="bg-white hover:bg-stone-50 text-stone-850 text-[10px] font-mono uppercase tracking-widest py-1.5 px-3 border border-stone-300 rounded-sm cursor-pointer transition flex items-center gap-1"
+                        >
+                          <Edit className="h-3 w-3" /> Edit
+                        </button>
                         {!isClosed && (
                           <button
                             onClick={() => handleAdminCloseJob(job.id)}
@@ -1735,6 +1975,183 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
               </div>
             </div>
 
+            {/* SECTION 5: HIGH IMPACT STATISTICS */}
+            <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-xs space-y-4 text-left">
+              <div className="border-b border-stone-100 pb-3 flex items-center justify-between">
+                <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-emerald-600" />
+                  5. High Impact Statistics Counters (Homepage)
+                </h3>
+                <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">STATS SECTION</span>
+              </div>
+              <p className="text-xs text-stone-500 font-serif italic">Modify the values and labels for the homepage stats card banner below. These values represent your corporate scale.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-stone-50 p-3 rounded border border-stone-200">
+                  <span className="font-mono text-[10px] font-bold text-stone-500 uppercase">Stat 1: Plants Live</span>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. 14+"
+                      value={siteConfig.stats?.plantsLiveValue || ""}
+                      onChange={(e) => handleStatChange("plantsLiveValue", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-xs font-bold text-stone-900"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. PLANTS LIVE"
+                      value={siteConfig.stats?.plantsLiveLabel || ""}
+                      onChange={(e) => handleStatChange("plantsLiveLabel", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-[10px] font-mono uppercase text-stone-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 p-3 rounded border border-stone-200">
+                  <span className="font-mono text-[10px] font-bold text-stone-500 uppercase">Stat 2: Line Speed</span>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. 480+"
+                      value={siteConfig.stats?.lineSpeedValue || ""}
+                      onChange={(e) => handleStatChange("lineSpeedValue", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-xs font-bold text-stone-900"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. MAX LINE SPEED"
+                      value={siteConfig.stats?.lineSpeedLabel || ""}
+                      onChange={(e) => handleStatChange("lineSpeedLabel", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-[10px] font-mono uppercase text-stone-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 p-3 rounded border border-stone-200">
+                  <span className="font-mono text-[10px] font-bold text-stone-500 uppercase">Stat 3: Alliance Certified</span>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. 100%"
+                      value={siteConfig.stats?.certifiedValue || ""}
+                      onChange={(e) => handleStatChange("certifiedValue", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-xs font-bold text-stone-900"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. ALLIANCE CERTIFIED"
+                      value={siteConfig.stats?.certifiedLabel || ""}
+                      onChange={(e) => handleStatChange("certifiedLabel", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-[10px] font-mono uppercase text-stone-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 p-3 rounded border border-stone-200">
+                  <span className="font-mono text-[10px] font-bold text-stone-500 uppercase">Stat 4: Max Salary</span>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. ₹18L+"
+                      value={siteConfig.stats?.maxSalaryValue || ""}
+                      onChange={(e) => handleStatChange("maxSalaryValue", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-xs font-bold text-stone-900"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. MAX SALARY DRAWN"
+                      value={siteConfig.stats?.maxSalaryLabel || ""}
+                      onChange={(e) => handleStatChange("maxSalaryLabel", e.target.value)}
+                      className="w-full bg-white border border-stone-300 p-2 text-[10px] font-mono uppercase text-stone-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 6: THE PILLARS OF FLEXIBLE PACKAGING PRODUCTION */}
+            <div className="bg-white border border-stone-200 rounded-sm p-6 shadow-xs space-y-4 text-left">
+              <div className="border-b border-stone-100 pb-3 flex items-center justify-between">
+                <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-amber-600" />
+                  6. Custom Company Pillars (Homepage)
+                </h3>
+                <span className="text-[10px] font-mono font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded">PILLARS SECTION</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Pillars Heading Title</label>
+                  <input
+                    type="text"
+                    value={siteConfig.pillarsTitle || ""}
+                    onChange={(e) => setSiteConfig({ ...siteConfig, pillarsTitle: e.target.value })}
+                    className="w-full bg-stone-50 border border-stone-300 p-2 text-xs font-serif font-bold text-stone-900 focus:outline-none"
+                    placeholder="e.g. The Pillars of Flexible Packaging Production"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono font-bold text-stone-500 uppercase mb-1">Pillars Subtitle Text</label>
+                  <input
+                    type="text"
+                    value={siteConfig.pillarsSubtitle || ""}
+                    onChange={(e) => setSiteConfig({ ...siteConfig, pillarsSubtitle: e.target.value })}
+                    className="w-full bg-stone-50 border border-stone-300 p-2 text-xs font-serif text-stone-700 focus:outline-none"
+                    placeholder="e.g. Bridging technical operators with high-throughput plants."
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                {(siteConfig.pillars || []).map((pillar, idx) => (
+                  <div key={pillar.id} className="bg-stone-50 p-4 border border-stone-200 rounded-sm space-y-3">
+                    <span className="font-mono text-xs font-bold text-stone-600 flex items-center gap-1">
+                      <span className="bg-stone-950 text-white font-mono text-[9px] px-1.5 py-0.5 rounded">PILLAR #{idx + 1}</span>
+                      {pillar.title || "Untitled Pillar"}
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-stone-500 font-bold mb-0.5">Pillar Title</label>
+                        <input
+                          type="text"
+                          value={pillar.title}
+                          onChange={(e) => handlePillarChange(idx, "title", e.target.value)}
+                          className="w-full bg-white border border-stone-300 p-2 text-xs font-serif font-bold text-stone-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-stone-500 font-bold mb-0.5">Experience Badge Label</label>
+                        <input
+                          type="text"
+                          value={pillar.minExp}
+                          onChange={(e) => handlePillarChange(idx, "minExp", e.target.value)}
+                          className="w-full bg-white border border-stone-300 p-2 text-xs font-mono font-bold text-amber-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-stone-500 font-bold mb-0.5">Tag Code</label>
+                        <input
+                          type="text"
+                          value={pillar.tag}
+                          onChange={(e) => handlePillarChange(idx, "tag", e.target.value)}
+                          className="w-full bg-white border border-stone-300 p-2 text-xs font-mono font-bold text-stone-800"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="block text-[9px] font-mono uppercase text-stone-500 font-bold mb-0.5">Pillar Description Details</label>
+                        <textarea
+                          rows={2}
+                          value={pillar.description}
+                          onChange={(e) => handlePillarChange(idx, "description", e.target.value)}
+                          className="w-full bg-white border border-stone-300 p-2 text-xs font-serif text-stone-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Bottom Floating Save Action */}
             <div className="flex justify-end pt-4">
               <button
@@ -1753,6 +2170,180 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
         {activeSection === "gazette_moderation" && (
           <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md">
             <AllianceGazette currentUser={currentUser} isAdminView={true} />
+          </div>
+        )}
+
+        {/* CONFIDENTIAL VAULT VIEW */}
+        {activeSection === "confidential_vault" && (
+          <div className="bg-white border border-stone-300 rounded-sm p-6 shadow-xl space-y-6 text-left">
+            <div className="border-b border-stone-200 pb-4 flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="font-serif font-bold text-xl text-stone-900 flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-amber-600" />
+                  Secured Alliance Confidential Vault
+                </h2>
+                <p className="text-xs text-stone-500 font-serif italic mt-0.5">
+                  Secure depository for internal plant blueprints, raw-material contract links, private text memos, and strategic guidelines.
+                </p>
+              </div>
+              <div className="bg-amber-50 text-amber-800 border border-amber-200 rounded-sm p-2 px-3 text-[11px] font-mono flex items-center gap-2">
+                <Shield className="h-4 w-4 animate-pulse text-amber-600" />
+                <span>AES-256 SIMULATED CLIENT-SIDE ENCRYPTION ACTIVE</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Column: Post New Link/Memo */}
+              <div className="lg:col-span-5 bg-stone-50 p-5 rounded-sm border border-stone-200 space-y-4">
+                <h3 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-1.5 border-b border-stone-200 pb-2">
+                  <Plus className="h-4 w-4 text-stone-600" />
+                  Secure New Asset
+                </h3>
+                
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-stone-500 font-bold mb-1">Asset Title / Document Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Line 5 BOPP Co-Extruder Blueprint"
+                      value={newConfForm.title}
+                      onChange={(e) => setNewConfForm({ ...newConfForm, title: e.target.value })}
+                      className="w-full bg-white border border-stone-300 p-2.5 rounded-sm text-xs font-serif text-stone-900 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-stone-500 font-bold mb-1">Asset Category Type</label>
+                    <select
+                      value={newConfForm.type}
+                      onChange={(e) => setNewConfForm({ ...newConfForm, type: e.target.value as any })}
+                      className="w-full bg-white border border-stone-300 p-2.5 rounded-sm text-xs font-mono font-bold text-stone-800 focus:outline-none"
+                    >
+                      <option value="link">🌐 Secure Document / Web Link URL</option>
+                      <option value="text">📝 Encrypted Text Memo / Secret Notes</option>
+                      <option value="image">🖼️ Secure Image / Blueprint Diagram URL</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-stone-500 font-bold mb-1">
+                      {newConfForm.type === "link" && "Web Hyperlink / Document URL"}
+                      {newConfForm.type === "text" && "Memo / Confidential Text Content"}
+                      {newConfForm.type === "image" && "Secure Image/Blueprint URL Link"}
+                    </label>
+                    {newConfForm.type === "text" ? (
+                      <textarea
+                        rows={5}
+                        required
+                        placeholder="Write down the confidential instructions, passwords, line specifications, or phone numbers here..."
+                        value={newConfForm.content}
+                        onChange={(e) => setNewConfForm({ ...newConfForm, content: e.target.value })}
+                        className="w-full bg-white border border-stone-300 p-2.5 rounded-sm text-xs font-serif text-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        required
+                        placeholder={newConfForm.type === "image" ? "https://images.unsplash.com/photo-..." : "https://docs.google.com/spreadsheets/..."}
+                        value={newConfForm.content}
+                        onChange={(e) => setNewConfForm({ ...newConfForm, content: e.target.value })}
+                        className="w-full bg-white border border-stone-300 p-2.5 rounded-sm text-xs font-mono text-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      />
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddConfidential}
+                    className="w-full bg-stone-900 hover:bg-stone-800 text-white font-mono uppercase tracking-widest text-xs py-3 rounded-sm font-bold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  >
+                    <Lock className="h-3.5 w-3.5 text-amber-400" />
+                    Encrypt & Commit to Vault
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: List of Assets */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                  <h3 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-1.5">
+                    <Shield className="h-4 w-4 text-amber-600" />
+                    Vault Repositories ({(siteConfig.confidentialAttachments || []).length})
+                  </h3>
+                  <span className="text-[10px] font-mono text-stone-400">RESTRICTED TO CURRENT ACTIVE ADMIN</span>
+                </div>
+
+                {!(siteConfig.confidentialAttachments || []).length ? (
+                  <div className="text-center py-16 bg-stone-50 border border-stone-200 border-dashed rounded p-6">
+                    <Lock className="h-8 w-8 text-stone-300 mx-auto mb-2" />
+                    <p className="font-serif italic text-xs text-stone-500">The Vault is completely empty. No confidential links or memos found.</p>
+                    <p className="text-[10px] text-stone-400 mt-1">Add items using the panel to the left to populate your secure repository.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    {(siteConfig.confidentialAttachments || []).map((asset) => (
+                      <div key={asset.id} className="bg-stone-50 p-4 border border-stone-200 rounded-sm shadow-2xs space-y-3 relative overflow-hidden">
+                        {/* Type Flag Badge */}
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="space-y-1">
+                            <span className="font-mono text-[9px] font-bold uppercase tracking-wider bg-stone-200 text-stone-800 p-1 rounded-xs">
+                              {asset.type === "link" && "🌐 HYPERLINK DOCUMENT"}
+                              {asset.type === "text" && "📝 CONFIDENTIAL MEMO"}
+                              {asset.type === "image" && "🖼️ SECURED BLUEPRINT"}
+                            </span>
+                            <h4 className="font-serif font-bold text-xs text-stone-950 pt-1">{asset.title}</h4>
+                            <p className="text-[9px] font-mono text-stone-400">Added on {asset.dateAdded || "N/A"}</p>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveConfidential(asset.id)}
+                            className="bg-red-50 hover:bg-red-100 text-red-700 p-1.5 border border-red-200 rounded-sm cursor-pointer transition shrink-0"
+                            title="Purge Document"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Rendering Content */}
+                        <div className="bg-white border border-stone-200 p-2.5 rounded-sm text-xs font-mono text-stone-800">
+                          {asset.type === "text" ? (
+                            <p className="whitespace-pre-wrap font-serif text-xs text-stone-700 leading-relaxed bg-stone-50/50 p-2 border border-stone-100 rounded-sm">{asset.content}</p>
+                          ) : asset.type === "image" ? (
+                            <div className="space-y-2">
+                              <div className="w-full max-h-36 overflow-hidden rounded border border-stone-200 bg-stone-100 relative">
+                                <img referrerPolicy="no-referrer" src={asset.content} alt={asset.title} className="w-full h-full object-contain" />
+                              </div>
+                              <a
+                                href={asset.content}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-700 hover:underline"
+                              >
+                                <Eye className="h-3 w-3" /> View Full HD Image Link
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between gap-2 overflow-hidden">
+                              <span className="truncate text-[11px] text-stone-500 font-mono select-all flex-1">{asset.content}</span>
+                              <a
+                                href={asset.content}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="bg-stone-900 hover:bg-stone-850 text-white font-mono text-[10px] p-1 px-2.5 rounded-sm flex items-center gap-1 cursor-pointer select-none"
+                              >
+                                Open Document <Eye className="h-3 w-3" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -2008,6 +2599,172 @@ export default function AdminDashboard({ currentUser, siteConfig: propsSiteConfi
                 Close Profile
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN EXCLUSIVE: CREATE / EDIT JOB VACANCY MODAL */}
+      {isJobModalOpen && (
+        <div className="fixed inset-0 bg-stone-900/65 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-stone-300 rounded-sm max-w-lg w-full p-6 shadow-2xl space-y-4 text-xs font-sans max-h-[90vh] overflow-y-auto">
+            <div className="border-b border-stone-200 pb-2 flex justify-between items-center">
+              <h3 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-1.5">
+                <Briefcase className="h-4 w-4 text-amber-600" />
+                {editingJob ? "Edit Dynamic Packaging Vacancy" : "Post Dynamic Packaging Vacancy"}
+              </h3>
+              <button
+                onClick={() => setIsJobModalOpen(false)}
+                className="text-stone-400 hover:text-stone-700 font-mono text-[10px] uppercase font-bold cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <form onSubmit={handleJobSubmit} className="space-y-3.5 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Job Title *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Senior BOPP Extrusion Operator"
+                    value={jobForm.title}
+                    onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Company Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Cosmo First Limited"
+                    value={jobForm.companyName}
+                    onChange={(e) => setJobForm({ ...jobForm, companyName: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Plant Location *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Karjan Plant, Gujarat"
+                    value={jobForm.location}
+                    onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Job Category / Department *</label>
+                  <select
+                    value={jobForm.department}
+                    onChange={(e) => setJobForm({ ...jobForm, department: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-850 focus:outline-none font-serif text-xs"
+                  >
+                    {(siteConfig.jobCategories || [
+                      "Extrusion Operator", "Printing Operator", "Lamination Operator", "Slitting Operator",
+                      "QC Engineer", "Production Manager", "Maintenance Engineer", "Sales & Marketing", "R&D", "Warehouse"
+                    ]).map((cat, i) => (
+                      <option key={i} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Required Experience *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 2-5 Years on Cast Lines"
+                    value={jobForm.experience}
+                    onChange={(e) => setJobForm({ ...jobForm, experience: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Educational Qualifications *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Diploma / ITI Extrusion / B.Sc"
+                    value={jobForm.education}
+                    onChange={(e) => setJobForm({ ...jobForm, education: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Offered Salary / Benefits *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ₹35,000 - ₹45,000 /mo + OT"
+                    value={jobForm.salary}
+                    onChange={(e) => setJobForm({ ...jobForm, salary: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Open Vacancies *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={jobForm.vacancies}
+                    onChange={(e) => setJobForm({ ...jobForm, vacancies: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                  />
+                </div>
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Application Deadline *</label>
+                  <input
+                    type="date"
+                    required
+                    value={jobForm.deadline}
+                    onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900 font-mono"
+                  />
+                </div>
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Core Required Skill Tags (comma separated) *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Extrusion, Corona Treatment, Tension Control, BOPP, Cast Line"
+                    value={jobForm.skillsRequired}
+                    onChange={(e) => setJobForm({ ...jobForm, skillsRequired: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900 font-mono"
+                  />
+                </div>
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-stone-500 font-mono uppercase mb-0.5 font-bold text-[9px]">Job Roles & Duties Description *</label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Enter detailed shift patterns, co-extruder parameters, melt pumps, air rings configuration duties..."
+                    value={jobForm.description}
+                    onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
+                    className="w-full bg-white border border-stone-300 p-2 rounded-sm text-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-900 font-serif leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex justify-end gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setIsJobModalOpen(false)}
+                  className="bg-white border border-stone-300 px-4 py-2 rounded-sm text-stone-700 font-mono uppercase tracking-widest text-[10px] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-stone-900 hover:bg-stone-850 text-white font-bold px-5 py-2 rounded-sm font-mono uppercase tracking-widest text-[10px] cursor-pointer flex items-center gap-1"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                  {editingJob ? "Save Changes" : "Publish Vacancy"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

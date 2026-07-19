@@ -50,6 +50,8 @@ export default function MarketingPortal({
 }: MarketingPortalProps) {
   
   const [selectedStructure, setSelectedStructure] = useState<'3layer' | '5layer'>('3layer');
+  const [selected3LayerExample, setSelected3LayerExample] = useState<'bopp' | 'metallized'>('bopp');
+  const [selected5LayerExample, setSelected5LayerExample] = useState<'evoh' | 'nylon'>('evoh');
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
 
   return (
@@ -84,23 +86,39 @@ export default function MarketingPortal({
                 The unified digital portal connecting certified extruder operators, lamination engineers, slitting supervisors, and QC analysts with premier BOPP, BOPET, CPP, and barrier-film plant networks.
               </p>
 
-              {/* High Impact Statistics Dashboard Grid */}
+              {/* High Impact Statistics Grid (Fully Dynamic from Admin Website Editor) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
                 <div className="bg-white/85 p-3 rounded-xl border border-slate-200/50 backdrop-blur-md shadow-2xs">
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">14+</p>
-                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">Plants Live</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                    {siteConfig?.stats?.plantsLiveValue || "14+"}
+                  </p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">
+                    {siteConfig?.stats?.plantsLiveLabel || "Plants Live"}
+                  </p>
                 </div>
                 <div className="bg-white/85 p-3 rounded-xl border border-slate-200/50 backdrop-blur-md shadow-2xs">
-                  <p className="text-xl sm:text-2xl font-black text-cyan-600 font-mono">480m</p>
-                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">Line Speed</p>
+                  <p className="text-xl sm:text-2xl font-black text-cyan-600 font-mono">
+                    {siteConfig?.stats?.lineSpeedValue || "480m"}
+                  </p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">
+                    {siteConfig?.stats?.lineSpeedLabel || "Line Speed"}
+                  </p>
                 </div>
                 <div className="bg-white/85 p-3 rounded-xl border border-slate-200/50 backdrop-blur-md shadow-2xs">
-                  <p className="text-xl sm:text-2xl font-black text-purple-600 font-mono">100%</p>
-                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">Certified</p>
+                  <p className="text-xl sm:text-2xl font-black text-purple-600 font-mono">
+                    {siteConfig?.stats?.certifiedValue || "100%"}
+                  </p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">
+                    {siteConfig?.stats?.certifiedLabel || "Certified"}
+                  </p>
                 </div>
                 <div className="bg-white/85 p-3 rounded-xl border border-slate-200/50 backdrop-blur-md shadow-2xs">
-                  <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">₹45k</p>
-                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">Max Salary</p>
+                  <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+                    {siteConfig?.stats?.maxSalaryValue || "₹45k"}
+                  </p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-wider font-mono font-bold">
+                    {siteConfig?.stats?.maxSalaryLabel || "Max Salary"}
+                  </p>
                 </div>
               </div>
 
@@ -217,7 +235,7 @@ export default function MarketingPortal({
                           id="toggle-login-password-btn"
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer flex items-center h-full"
+                          className="absolute right-3 inset-y-0 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
                           title={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -231,7 +249,7 @@ export default function MarketingPortal({
                       disabled={isSubmitting}
                       className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 text-xs transition font-mono uppercase tracking-widest shadow-lg shadow-cyan-500/10 cursor-pointer active:scale-98"
                     >
-                      Authorize Account
+                      Login
                       <ArrowRight className="h-3.5 w-3.5" />
                     </button>
 
@@ -317,7 +335,7 @@ export default function MarketingPortal({
                           id="toggle-signup-password-btn"
                           type="button"
                           onClick={() => setShowSignupPassword(!showSignupPassword)}
-                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer flex items-center h-full"
+                          className="absolute right-3 inset-y-0 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
                           title={showSignupPassword ? "Hide password" : "Show password"}
                         >
                           {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -476,35 +494,96 @@ export default function MarketingPortal({
           </div>
 
           {/* Structure Selector Tabs */}
-          <div className="flex justify-center mb-8">
+          <div className="flex flex-col items-center gap-4 mb-8">
             <div className="bg-slate-200/60 p-1 rounded-xl flex border border-slate-200">
               <button
                 onClick={() => {
                   setSelectedStructure('3layer');
                   setSelectedLayerId(null);
                 }}
-                className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all uppercase tracking-wider ${
+                className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all uppercase tracking-wider cursor-pointer ${
                   selectedStructure === '3layer'
                     ? "bg-white text-cyan-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                3-Layer BOPP Structure
+                3-Layer Extrusion Structures
               </button>
               <button
                 onClick={() => {
                   setSelectedStructure('5layer');
                   setSelectedLayerId(null);
                 }}
-                className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all uppercase tracking-wider ${
+                className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all uppercase tracking-wider cursor-pointer ${
                   selectedStructure === '5layer'
                     ? "bg-white text-purple-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                5-Layer High-Barrier EVOH Structure
+                5-Layer Extrusion Structures
               </button>
             </div>
+
+            {/* Sub-selector for dynamic examples */}
+            {selectedStructure === '3layer' ? (
+              <div className="flex flex-wrap justify-center gap-2">
+                <button
+                  onClick={() => {
+                    setSelected3LayerExample('bopp');
+                    setSelectedLayerId(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-extrabold border transition cursor-pointer ${
+                    selected3LayerExample === 'bopp'
+                      ? "bg-cyan-600 text-white border-cyan-600 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  Example A: Standard BOPP Film (Food Wrapper)
+                </button>
+                <button
+                  onClick={() => {
+                    setSelected3LayerExample('metallized');
+                    setSelectedLayerId(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-extrabold border transition cursor-pointer ${
+                    selected3LayerExample === 'metallized'
+                      ? "bg-cyan-600 text-white border-cyan-600 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  Example B: Metallized Barrier Film (High-Shield Snack Bag)
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-2">
+                <button
+                  onClick={() => {
+                    setSelected5LayerExample('evoh');
+                    setSelectedLayerId(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-extrabold border transition cursor-pointer ${
+                    selected5LayerExample === 'evoh'
+                      ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  Example A: Transparent EVOH Gas Barrier (Flavor-Lock)
+                </button>
+                <button
+                  onClick={() => {
+                    setSelected5LayerExample('nylon');
+                    setSelectedLayerId(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-extrabold border transition cursor-pointer ${
+                    selected5LayerExample === 'nylon'
+                      ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  Example B: Tough Polyamide (Nylon) Puncture Barrier (Meat/Liquid)
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -514,10 +593,22 @@ export default function MarketingPortal({
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                 <div>
                   <h3 className="font-serif font-bold text-slate-900 text-lg">
-                    {selectedStructure === '3layer' ? "3-Layer Co-Extruded Standard Film" : "5-Layer Symmetric High-Barrier Foil"}
+                    {selectedStructure === '3layer' ? (
+                      selected3LayerExample === 'bopp' ? "3-Layer Co-Extruded Standard BOPP Film" : "3-Layer Vacuum Metallized Barrier Film"
+                    ) : (
+                      selected5LayerExample === 'evoh' ? "5-Layer Symmetrical Gas-Barrier Retort Film" : "5-Layer Symmetrical Tough Puncture Barrier"
+                    )}
                   </h3>
                   <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mt-0.5">
-                    {selectedStructure === '3layer' ? "Polymers: BOPP / Terpolymer Heat Sealant" : "Polymers: PE / Tie Resins / EVOH / PET Skin"}
+                    {selectedStructure === '3layer' ? (
+                      selected3LayerExample === 'bopp'
+                        ? "Polymers: Heat-Sealable Terpolymer / BOPP Homopolymer Core / Corona Treated Skin"
+                        : "Polymers: Metallocene LLDPE / Aluminum Deposition BOPP / Protective Print Skin"
+                    ) : (
+                      selected5LayerExample === 'evoh'
+                        ? "Polymers: Polyethylene Sealer / Tie Resins / EVOH Gas Barrier / Tie / PET Skin"
+                        : "Polymers: EVA Low-Temp / Tie Resins / Polyamide (Nylon) Core / Tie / PP Retort Skin"
+                    )}
                   </p>
                 </div>
                 <span className={`text-xs font-mono font-extrabold px-3 py-1 rounded-full border ${
@@ -525,162 +616,320 @@ export default function MarketingPortal({
                     ? "bg-cyan-50 border-cyan-200 text-cyan-700"
                     : "bg-purple-50 border-purple-200 text-purple-700"
                 }`}>
-                  {selectedStructure === '3layer' ? "16 Micron (16µ)" : "25 Micron (25µ)"}
+                  {selectedStructure === '3layer' ? (
+                    selected3LayerExample === 'bopp' ? "16 Micron (16µ)" : "20 Micron (20µ)"
+                  ) : (
+                    selected5LayerExample === 'evoh' ? "25 Micron (25µ)" : "30 Micron (30µ)"
+                  )}
                 </span>
               </div>
 
               {/* Interactive Diagram Canvas */}
               <div className="space-y-4">
                 {selectedStructure === '3layer' ? (
-                  /* 3-Layer Interactivity Diagram */
-                  <div className="space-y-2">
-                    <div
-                      onClick={() => setSelectedLayerId('3-seal')}
-                      className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '3-seal'
-                          ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-cyan-400 to-cyan-500" />
-                      <div className="pl-3 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs">A: Heat Sealable Skin Layer (Top Side)</h4>
-                          <p className="text-[10px] text-slate-500 font-mono">Thickness: 2.0 Microns (2µ) • SIT: 105°C</p>
+                  selected3LayerExample === 'bopp' ? (
+                    /* 3-Layer BOPP Standard Structure */
+                    <div className="space-y-2">
+                      <div
+                        onClick={() => setSelectedLayerId('3-seal')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-seal'
+                            ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-cyan-400 to-cyan-500" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer A: Heat Sealable Skin (Top Side)</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 2.0 Microns (2µ) • SIT: 105°C • Anti-Block</p>
+                          </div>
+                          <span className="text-[10px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                         </div>
-                        <span className="text-[10px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('3-core')}
-                      className={`group cursor-pointer p-6 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '3-core'
-                          ? "bg-blue-50/50 border-blue-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-blue-500 to-indigo-500" />
-                      <div className="pl-3 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs">B: Biaxially-Oriented Polypropylene Core Layer</h4>
-                          <p className="text-[10px] text-slate-500 font-mono">Thickness: 12.0 Microns (12µ) • Tensile: High Stiffness</p>
+                      <div
+                        onClick={() => setSelectedLayerId('3-core')}
+                        className={`group cursor-pointer p-6 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-core'
+                            ? "bg-blue-50/50 border-blue-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-blue-500 to-indigo-500" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer B: Biaxially-Oriented Polypropylene Homopolymer Core</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 12.0 Microns (12µ) • High Mechanical Tensile</p>
+                          </div>
+                          <span className="text-[10px] bg-blue-100/50 text-blue-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                         </div>
-                        <span className="text-[10px] bg-blue-100/50 text-blue-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('3-corona')}
-                      className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '3-corona'
-                          ? "bg-purple-50/50 border-purple-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-purple-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-purple-400 to-purple-500" />
-                      <div className="pl-3 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs">C: Corona Treated Printable Layer (Bottom Side)</h4>
-                          <p className="text-[10px] text-slate-500 font-mono">Thickness: 2.0 Microns (2µ) • Surface Tension: &gt;38 dynes/cm</p>
+                      <div
+                        onClick={() => setSelectedLayerId('3-corona')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-corona'
+                            ? "bg-purple-50/50 border-purple-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-purple-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-purple-400 to-purple-500" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer C: Corona Treated Skin (Bottom Side)</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 2.0 Microns (2µ) • Surface Energy: &gt;38 dynes/cm</p>
+                          </div>
+                          <span className="text-[10px] bg-purple-100/50 text-purple-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                         </div>
-                        <span className="text-[10px] bg-purple-100/50 text-purple-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* 3-Layer Metallized Film */
+                    <div className="space-y-2">
+                      <div
+                        onClick={() => setSelectedLayerId('3-met-seal')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-met-seal'
+                            ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-cyan-400 to-cyan-500" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer A: Metallocene LLDPE High-Strength Sealing Skin</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • SIT: 110°C • Direct Food Contact</p>
+                          </div>
+                          <span className="text-[10px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('3-met-core')}
+                        className={`group cursor-pointer p-6 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-met-core'
+                            ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-amber-500 to-amber-600" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer B: Vacuum Metallized Aluminum BOPP Core</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 15.0 Microns (15µ) • Optical Density: 2.2 - 2.5</p>
+                          </div>
+                          <span className="text-[10px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('3-met-shield')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '3-met-shield'
+                            ? "bg-purple-50/50 border-purple-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-purple-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-purple-400 to-purple-500" />
+                        <div className="pl-3 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer C: Protective Primed Outer Print Shield</h4>
+                            <p className="text-[10px] text-slate-500 font-mono">Thickness: 2.0 Microns (2µ) • Solvent Primer Coated</p>
+                          </div>
+                          <span className="text-[10px] bg-purple-100/50 text-purple-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase shrink-0">Click to Inspect</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 ) : (
-                  /* 5-Layer Interactivity Diagram */
-                  <div className="space-y-1.5">
-                    <div
-                      onClick={() => setSelectedLayerId('5-seal')}
-                      className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '5-seal'
-                          ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-cyan-400 to-cyan-500" />
-                      <div className="pl-2 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-[11px]">Layer 1: PE Sealing Sealant Skin</h4>
-                          <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • SIT: 110°C • Direct Food Contact Safe</p>
+                  selected5LayerExample === 'evoh' ? (
+                    /* 5-Layer Symmetric EVOH Structure */
+                    <div className="space-y-1.5">
+                      <div
+                        onClick={() => setSelectedLayerId('5-seal')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-seal'
+                            ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-cyan-400 to-cyan-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 1: PE Sealing Sealant Skin</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • SIT: 110°C • Direct Food Contact Safe</p>
+                          </div>
+                          <span className="text-[9px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                         </div>
-                        <span className="text-[9px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('5-tie1')}
-                      className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '5-tie1'
-                          ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
-                      <div className="pl-2 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-[11px]">Layer 2: Maleic Anhydride Adhesive Tie Layer</h4>
-                          <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Prevents Interlayer Delamination</p>
+                      <div
+                        onClick={() => setSelectedLayerId('5-tie1')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-tie1'
+                            ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 2: Maleic Anhydride Adhesive Tie Layer</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Prevents Interlayer Delamination</p>
+                          </div>
+                          <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                         </div>
-                        <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('5-evoh')}
-                      className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '5-evoh'
-                          ? "bg-indigo-50/50 border-indigo-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-indigo-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-indigo-500 to-purple-600" />
-                      <div className="pl-2 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs">Layer 3: Ethylene Vinyl Alcohol (EVOH) Oxygen Gas Barrier</h4>
-                          <p className="text-[10px] text-indigo-700 font-mono font-bold">Thickness: 13.0 Microns (13µ) • Gas Transmission: Ultra-Low</p>
+                      <div
+                        onClick={() => setSelectedLayerId('5-evoh')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-evoh'
+                            ? "bg-indigo-50/50 border-indigo-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-indigo-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-indigo-500 to-purple-600" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer 3: Ethylene Vinyl Alcohol (EVOH) Oxygen Gas Barrier</h4>
+                            <p className="text-[10px] text-indigo-700 font-mono font-bold">Thickness: 13.0 Microns (13µ) • Gas Transmission: Ultra-Low</p>
+                          </div>
+                          <span className="text-[10px] bg-indigo-100/50 text-indigo-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                         </div>
-                        <span className="text-[10px] bg-indigo-100/50 text-indigo-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('5-tie2')}
-                      className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '5-tie2'
-                          ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
-                      <div className="pl-2 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-[11px]">Layer 4: Specialty Polyolefin Tie Layer</h4>
-                          <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Perfect Bonding with PET Skins</p>
+                      <div
+                        onClick={() => setSelectedLayerId('5-tie2')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-tie2'
+                            ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 4: Specialty Polyolefin Tie Layer</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Perfect Bonding with PET Skins</p>
+                          </div>
+                          <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                         </div>
-                        <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                       </div>
-                    </div>
 
-                    <div
-                      onClick={() => setSelectedLayerId('5-pet')}
-                      className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
-                        selectedLayerId === '5-pet'
-                          ? "bg-emerald-50/50 border-emerald-400 shadow-md translate-x-2"
-                          : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-emerald-200 hover:-translate-y-0.5"
-                      }`}
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-emerald-400 to-emerald-500" />
-                      <div className="pl-2 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-[11px]">Layer 5: Biaxially-Oriented Polyester (PET) Outer Carrier</h4>
-                          <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Advantage: High Heat Resistance & Ink Key</p>
+                      <div
+                        onClick={() => setSelectedLayerId('5-pet')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-pet'
+                            ? "bg-emerald-50/50 border-emerald-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-emerald-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-emerald-400 to-emerald-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 5: Biaxially-Oriented Polyester (PET) Outer Carrier</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Advantage: High Heat Resistance & Ink Key</p>
+                          </div>
+                          <span className="text-[9px] bg-emerald-100/50 text-emerald-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                         </div>
-                        <span className="text-[9px] bg-emerald-100/50 text-emerald-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* 5-Layer Symmetric PA/PE Puncture-Proof Structure */
+                    <div className="space-y-1.5">
+                      <div
+                        onClick={() => setSelectedLayerId('5-ny-seal')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-ny-seal'
+                            ? "bg-cyan-50/50 border-cyan-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-cyan-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-cyan-400 to-cyan-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 1: Low-Temp EVA Sealing Skin</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 4.0 Microns (4µ) • SIT: 90°C • High Hot-Tack Elastic Sealer</p>
+                          </div>
+                          <span className="text-[9px] bg-cyan-100/50 text-cyan-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('5-ny-tie1')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-ny-tie1'
+                            ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 2: Specialty Elastomer Adhesive Tie Layer</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Prevents Delamination with Polyamide</p>
+                          </div>
+                          <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('5-ny-core')}
+                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-ny-core'
+                            ? "bg-indigo-50/50 border-indigo-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-indigo-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-indigo-500 to-purple-600" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-xs">Layer 3: Polyamide 6 (Nylon) Puncture Barrier Core</h4>
+                            <p className="text-[10px] text-indigo-700 font-mono font-bold">Thickness: 11.0 Microns (11µ) • Physical Abuse & Abrasion Shield</p>
+                          </div>
+                          <span className="text-[10px] bg-indigo-100/50 text-indigo-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('5-ny-tie2')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-ny-tie2'
+                            ? "bg-amber-50/50 border-amber-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-amber-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-400 to-amber-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 4: Specialty Polyolefin Tie Layer</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 3.0 Microns (3µ) • Purpose: Perfect Bond with Retort PP Skin</p>
+                          </div>
+                          <span className="text-[9px] bg-amber-100/50 text-amber-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedLayerId('5-ny-pp')}
+                        className={`group cursor-pointer p-3 rounded-xl border transition-all duration-300 relative overflow-hidden ${
+                          selectedLayerId === '5-ny-pp'
+                            ? "bg-emerald-50/50 border-emerald-400 shadow-md translate-x-2"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-emerald-200 hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-emerald-400 to-emerald-500" />
+                        <div className="pl-2 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-[11px]">Layer 5: Polypropylene (PP) Outer Retort Carrier Skin</h4>
+                            <p className="text-[9px] text-slate-500 font-mono">Thickness: 4.0 Microns (4µ) • Advantage: High-Heat autoclave Safe (165°C)</p>
+                          </div>
+                          <span className="text-[9px] bg-emerald-100/50 text-emerald-700 font-mono px-2 py-0.5 rounded-sm font-bold uppercase">Click</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
             </div>
@@ -740,6 +989,50 @@ export default function MarketingPortal({
                       <p className="flex justify-between"><span>Shelf Life (Dynes):</span> <span className="font-bold text-slate-800">90 Days (Decays over time)</span></p>
                       <p className="flex justify-between"><span>Ink Adhesion:</span> <span className="font-bold text-slate-800">Rotogravure / Flexo Perfect</span></p>
                       <p className="flex justify-between"><span>Additives:</span> <span className="font-bold text-slate-800">Zero Slipping agents (Anti-migration)</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '3-met-seal' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-cyan-50 border border-cyan-200 text-cyan-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">m-LLDPE SKIN</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Metallocene Sealing Copolymer</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      Designed to provide extremely strong hermetic seals on high-speed snack pouch packaging machinery. Metallocene catalysts yield narrow molecular weight distribution, raising puncture integrity.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Base Polymer:</span> <span className="font-bold text-slate-800">m-LLDPE / Plastomer</span></p>
+                      <p className="flex justify-between"><span>SIT (Init Temp):</span> <span className="font-bold text-slate-800">98°C - 105°C</span></p>
+                      <p className="flex justify-between"><span>COF (Kinetic):</span> <span className="font-bold text-slate-800">0.20</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '3-met-core' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-amber-50 border border-amber-200 text-amber-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">METALLIZED CORE</span>
+                    <h4 className="font-bold text-slate-900 text-sm">High-Barrier Vacuum Aluminum BOPP</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      A core layer modified with high crystallinity PP and coated inline via vacuum aluminum deposition. Reflects 99.8% of light and gas molecules, providing outstanding shelf-life elongation for oils and oxygen-sensitive contents.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Metal Deposition:</span> <span className="font-bold text-slate-800">Aluminum (Al 99.99%)</span></p>
+                      <p className="flex justify-between"><span>Optical Density:</span> <span className="font-bold text-slate-800">2.2 - 2.5 OD</span></p>
+                      <p className="flex justify-between"><span>Oxygen Barrier:</span> <span className="font-bold text-slate-800">Outstanding (&lt;15 cc/m²/day)</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '3-met-shield' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-purple-50 border border-purple-200 text-purple-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">PRINTING SHIELD</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Primed Print Carrier Layer</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      High tension outer print layer engineered with non-migrating slip agents to prevent deterioration of vacuum metal and facilitate excellent ink laydown for multi-color photogravure lines.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Surface Energy:</span> <span className="font-bold text-slate-800">&gt;40 dynes/cm</span></p>
+                      <p className="flex justify-between"><span>Treating Type:</span> <span className="font-bold text-slate-800">Chemical + Flame Corona</span></p>
                     </div>
                   </div>
                 )}
@@ -813,7 +1106,80 @@ export default function MarketingPortal({
                     <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
                       <p className="flex justify-between"><span>Base Polymer:</span> <span className="font-bold text-slate-800">Polyethylene Terephthalate</span></p>
                       <p className="flex justify-between"><span>Melting Point:</span> <span className="font-bold text-slate-800">260°C (High Heat)</span></p>
-                      <p className="flex justify-between"><span>Gloss Value:</span> <span className="font-bold text-slate-800 font-bold text-slate-800">&gt;125 Gu (Ultra Glossy)</span></p>
+                      <p className="flex justify-between"><span>Gloss Value:</span> <span className="font-bold text-slate-800">&gt;125 Gu (Ultra Glossy)</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '5-ny-seal' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-cyan-50 border border-cyan-200 text-cyan-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">LOW-TEMP EVA</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Ethylene-Vinyl Acetate Skin</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      High-integrity sealing layer with extremely low initiation temperatures. Prevents thermal distortion of tough polyamide core while providing elite seal hermeticity.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Base Polymer:</span> <span className="font-bold text-slate-800">EVA Copolymer (12% VA)</span></p>
+                      <p className="flex justify-between"><span>SIT (Sealing):</span> <span className="font-bold text-slate-800">90°C</span></p>
+                      <p className="flex justify-between"><span>Hot Tack Strength:</span> <span className="font-bold text-slate-800">High Elastic Performance</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '5-ny-tie1' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-amber-50 border border-amber-200 text-amber-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">ELASTOMERIC TIE</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Specialty Polyolefin Tie Layer</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      Specially modified maleic-anhydride functionalized elastomer tie. Secures the low-density EVA sealing skin to the polar Nylon 6 core without any interlayer separation during extreme flexure.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Adhesion Peel:</span> <span className="font-bold text-slate-800">&gt;5.0 N/cm</span></p>
+                      <p className="flex justify-between"><span>Melt Temperature:</span> <span className="font-bold text-slate-800">125°C</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '5-ny-core' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">PUNCTURE BARRIER</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Polyamide 6 (Nylon 6) core</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      The core mechanical shielding layer. Offers incredible tensile strength, puncture opposition, and crack resistance. Designed for vacuum packaging of sharp meats, bone-in products, and heavy liquids.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Base Polymer:</span> <span className="font-bold text-slate-800">Polyamide 6 Homopolymer</span></p>
+                      <p className="flex justify-between"><span>Puncture Resistance:</span> <span className="font-bold text-slate-800">Excellent (&gt;18 N)</span></p>
+                      <p className="flex justify-between"><span>Flex-crack Holes:</span> <span className="font-bold text-slate-800">Zero (After 5,000 Gelbo cycles)</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '5-ny-tie2' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-amber-50 border border-amber-200 text-amber-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">RETORT TIE LINK</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Specialty Nylon-to-PP Tie Link</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      Secures the outer Retort Polypropylene with the Polyamide core layer. Stabilized to preserve high bonding cohesion during autoclaving and high-pressure steam treatments up to 135°C.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Interlayer Bond:</span> <span className="font-bold text-slate-800">Steam Retort Proof</span></p>
+                      <p className="flex justify-between"><span>Haze Value:</span> <span className="font-bold text-slate-800">Low Haze, Optically Translucent</span></p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedLayerId === '5-ny-pp' && (
+                  <div className="space-y-4 animate-fade-in">
+                    <span className="inline-block bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[9px] font-bold px-2 py-0.5 rounded uppercase">RETORT PP SKIN</span>
+                    <h4 className="font-bold text-slate-900 text-sm">Polypropylene Retort Carrier Skin</h4>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      The high thermal resistance outer skin designed to survive extreme boiling and industrial steam autoclave processing. Retains pristine visual luster and label printing integrity after high heat exposure.
+                    </p>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 text-[10px] font-mono space-y-1">
+                      <p className="flex justify-between"><span>Base Polymer:</span> <span className="font-bold text-slate-800">PP Block Copolymer</span></p>
+                      <p className="flex justify-between"><span>Melting Point:</span> <span className="font-bold text-slate-800">165°C</span></p>
+                      <p className="flex justify-between"><span>Modulus of Elasticity:</span> <span className="font-bold text-slate-800">1400 MPa</span></p>
                     </div>
                   </div>
                 )}
@@ -856,83 +1222,113 @@ export default function MarketingPortal({
               Industrial Training Benchmarks
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 font-serif">
-              The Pillars of Flexible Packaging Production
+              {siteConfig?.pillarsTitle || "The Pillars of Flexible Packaging Production"}
             </h2>
             <p className="text-slate-600 text-xs sm:text-sm mt-2">
-              Every bag, wrapper, and pouch on store shelves is engineered by a specialized team of technical operators. Access career pathways for the following four plant pillars:
+              {siteConfig?.pillarsSubtitle || "Every bag, wrapper, and pouch on store shelves is engineered by a specialized team of technical operators. Access career pathways for the following four plant pillars:"}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Pillar 1 */}
-            <div className="bg-slate-50/50 hover:bg-white p-6 rounded-2xl border border-slate-200/60 hover:border-cyan-400 transition-all duration-300 shadow-3xs group flex flex-col justify-between text-left">
-              <div className="space-y-4">
-                <div className="bg-cyan-50 text-cyan-700 w-10 h-10 rounded-xl flex items-center justify-center border border-cyan-150 shadow-2xs group-hover:scale-110 transition duration-300">
-                  <Cpu className="h-5 w-5 text-cyan-600" />
-                </div>
-                <h3 className="font-serif font-bold text-slate-900 text-base">Extrusion Line Operator</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Manages high-throughput, multi-million dollar cast & bubble lines. Configures motor RPM, die lips, air rings, draft ratios, and chilling rollers for continuous production.
-                </p>
-              </div>
-              <div className="border-t border-slate-100 pt-4 mt-6 flex justify-between text-[10px] font-mono text-slate-400">
-                <span>Min Exp: 1-2 Yrs</span>
-                <span className="font-bold text-cyan-600">Extrusion</span>
-              </div>
-            </div>
+            {(() => {
+              const resolveIcon = (iconName: string) => {
+                switch (iconName) {
+                  case "Cpu": return <Cpu className="h-5 w-5 text-cyan-650" />;
+                  case "Activity": return <Activity className="h-5 w-5 text-indigo-650" />;
+                  case "Layers": return <Layers className="h-5 w-5 text-purple-650" />;
+                  case "Film": return <Film className="h-5 w-5 text-emerald-650" />;
+                  case "Award": return <Award className="h-5 w-5 text-amber-650" />;
+                  case "Shield": return <Shield className="h-5 w-5 text-red-650" />;
+                  default: return <Cpu className="h-5 w-5 text-cyan-650" />;
+                }
+              };
 
-            {/* Pillar 2 */}
-            <div className="bg-slate-50/50 hover:bg-white p-6 rounded-2xl border border-slate-200/60 hover:border-indigo-400 transition-all duration-300 shadow-3xs group flex flex-col justify-between text-left">
-              <div className="space-y-4">
-                <div className="bg-indigo-50 text-indigo-700 w-10 h-10 rounded-xl flex items-center justify-center border border-indigo-150 shadow-2xs group-hover:scale-110 transition duration-300">
-                  <Activity className="h-5 w-5 text-indigo-600" />
-                </div>
-                <h3 className="font-serif font-bold text-slate-900 text-base">Quality Control & Lab Analyst</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Evaluates film specs. Tests oxygen transmission (OTR), dynamic/static coefficient of friction (COF), seal strength limits, haze levels, and inline dyne levels.
-                </p>
-              </div>
-              <div className="border-t border-slate-100 pt-4 mt-6 flex justify-between text-[10px] font-mono text-slate-400">
-                <span>Min Exp: ITI/B.Sc</span>
-                <span className="font-bold text-indigo-600">Lab Analysis</span>
-              </div>
-            </div>
+              const fallbackPillars = [
+                {
+                  id: "p1",
+                  title: "Extrusion Line Operator",
+                  description: "Manages high-throughput, multi-million dollar cast & bubble lines. Configures motor RPM, die lips, air rings, draft ratios, and chilling rollers for continuous production.",
+                  minExp: "1-2 Yrs",
+                  tag: "Extrusion",
+                  icon: "Cpu"
+                },
+                {
+                  id: "p2",
+                  title: "Quality Control & Lab Analyst",
+                  description: "Evaluates film specs. Tests oxygen transmission (OTR), dynamic/static coefficient of friction (COF), seal strength limits, haze levels, and inline dyne levels.",
+                  minExp: "ITI/B.Sc",
+                  tag: "Lab Analysis",
+                  icon: "Activity"
+                },
+                {
+                  id: "p3",
+                  title: "Lamination Engineer",
+                  description: "Commands solventless & solvent-based laminators. Controls adhesive mixing ratios, drying tunnel temperatures, curing chamber durations, and prevents visual curling.",
+                  minExp: "3+ Yrs",
+                  tag: "Lamination",
+                  icon: "Layers"
+                },
+                {
+                  id: "p4",
+                  title: "Slitting & Rewinding Master",
+                  description: "Manages high-speed razor and shear slitting machines. Minimizes edge trim waste, eliminates static charges, prevents roll wrinkles, and maximizes core tightness.",
+                  minExp: "Diploma",
+                  tag: "Slitting Desk",
+                  icon: "Film"
+                }
+              ];
 
-            {/* Pillar 3 */}
-            <div className="bg-slate-50/50 hover:bg-white p-6 rounded-2xl border border-slate-200/60 hover:border-purple-400 transition-all duration-300 shadow-3xs group flex flex-col justify-between text-left">
-              <div className="space-y-4">
-                <div className="bg-purple-50 text-purple-700 w-10 h-10 rounded-xl flex items-center justify-center border border-purple-150 shadow-2xs group-hover:scale-110 transition duration-300">
-                  <Layers className="h-5 w-5 text-purple-600" />
-                </div>
-                <h3 className="font-serif font-bold text-slate-900 text-base">Lamination Engineer</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Commands solventless & solvent-based laminators. Controls adhesive mixing ratios, drying tunnel temperatures, curing chamber durations, and prevents visual curling.
-                </p>
-              </div>
-              <div className="border-t border-slate-100 pt-4 mt-6 flex justify-between text-[10px] font-mono text-slate-400">
-                <span>Min Exp: 3+ Yrs</span>
-                <span className="font-bold text-purple-600">Lamination</span>
-              </div>
-            </div>
+              const activePillars = (siteConfig?.pillars && siteConfig.pillars.length > 0) ? siteConfig.pillars : fallbackPillars;
 
-            {/* Pillar 4 */}
-            <div className="bg-slate-50/50 hover:bg-white p-6 rounded-2xl border border-slate-200/60 hover:border-emerald-400 transition-all duration-300 shadow-3xs group flex flex-col justify-between text-left">
-              <div className="space-y-4">
-                <div className="bg-emerald-50 text-emerald-700 w-10 h-10 rounded-xl flex items-center justify-center border border-emerald-150 shadow-2xs group-hover:scale-110 transition duration-300">
-                  <Film className="h-5 w-5 text-emerald-600" />
-                </div>
-                <h3 className="font-serif font-bold text-slate-900 text-base">Slitting & Rewinding Master</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Manages high-speed razor and shear slitting machines. Minimizes edge trim waste, eliminates static charges, prevents roll wrinkles, and maximizes core tightness.
-                </p>
-              </div>
-              <div className="border-t border-slate-100 pt-4 mt-6 flex justify-between text-[10px] font-mono text-slate-400">
-                <span>Min Exp: Diploma</span>
-                <span className="font-bold text-emerald-600">Slitting Desk</span>
-              </div>
-            </div>
+              return activePillars.map((p: any) => {
+                const borderColors: { [key: string]: string } = {
+                  Cpu: "hover:border-cyan-400",
+                  Activity: "hover:border-indigo-400",
+                  Layers: "hover:border-purple-400",
+                  Film: "hover:border-emerald-400",
+                  Award: "hover:border-amber-400",
+                  Shield: "hover:border-red-400"
+                };
+                const bgColors: { [key: string]: string } = {
+                  Cpu: "bg-cyan-50 text-cyan-700 border-cyan-150",
+                  Activity: "bg-indigo-50 text-indigo-700 border-indigo-150",
+                  Layers: "bg-purple-50 text-purple-700 border-purple-150",
+                  Film: "bg-emerald-50 text-emerald-700 border-emerald-150",
+                  Award: "bg-amber-50 text-amber-700 border-amber-150",
+                  Shield: "bg-red-50 text-red-700 border-red-150"
+                };
+                const textColors: { [key: string]: string } = {
+                  Cpu: "text-cyan-600",
+                  Activity: "text-indigo-600",
+                  Layers: "text-purple-600",
+                  Film: "text-emerald-600",
+                  Award: "text-amber-600",
+                  Shield: "text-red-600"
+                };
 
+                const hoverBorder = borderColors[p.icon] || "hover:border-cyan-400";
+                const bgClass = bgColors[p.icon] || "bg-cyan-50 text-cyan-700 border-cyan-150";
+                const textClass = textColors[p.icon] || "text-cyan-600";
+
+                return (
+                  <div key={p.id} className={`bg-slate-50/50 hover:bg-white p-6 rounded-2xl border border-slate-200/60 ${hoverBorder} transition-all duration-300 shadow-3xs group flex flex-col justify-between text-left`}>
+                    <div className="space-y-4">
+                      <div className={`${bgClass} w-10 h-10 rounded-xl flex items-center justify-center border shadow-2xs group-hover:scale-110 transition duration-300`}>
+                        {resolveIcon(p.icon)}
+                      </div>
+                      <h3 className="font-serif font-bold text-slate-900 text-base">{p.title}</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        {p.description}
+                      </p>
+                    </div>
+                    <div className="border-t border-slate-100 pt-4 mt-6 flex justify-between text-[10px] font-mono text-slate-400">
+                      <span>Min Exp: {p.minExp}</span>
+                      <span className={`font-bold ${textClass}`}>{p.tag}</span>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
 
         </div>
